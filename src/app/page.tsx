@@ -35,6 +35,8 @@ type Meta = {
   incomeP1: number; // Alba
   incomeP2: number; // Alberto
   carryFromPrev: number; // sobrante del mes anterior (manual por ahora)
+  savingsSoFar: number; // ahorro acumulado total (solo informativo)
+
 
   // Ya lo tenías: lo tratamos como "ahorro apartado este mes"
   savingTarget: number;
@@ -60,6 +62,7 @@ const defaultMeta: Meta = {
   incomeP2: 0,
   carryFromPrev: 0,
   savingTarget: 0,
+  savingsSoFar: 0,
   savingsGoal: 0, // NUEVO
 };
 
@@ -80,13 +83,13 @@ const CATEGORY_STYLES: Record<
     inner: "bg-black/20 border-white/20",
     dot: "bg-emerald-400",
   },
-  compras: {
+  entretenimiento: {
     card: "bg-pink-500/35 border-pink-200/60 ring-1 ring-pink-200/30 shadow-lg shadow-pink-500/15",
     badge: "bg-pink-500/45 border-pink-200/70 text-white",
     inner: "bg-black/20 border-white/20",
     dot: "bg-pink-400",
   },
-  vivienda: {
+  alojamiento: {
     card: "bg-amber-500/35 border-amber-200/60 ring-1 ring-amber-200/30 shadow-lg shadow-amber-500/15",
     badge: "bg-amber-500/45 border-amber-200/70 text-white",
     inner: "bg-black/20 border-white/20",
@@ -104,6 +107,12 @@ const CATEGORY_STYLES: Record<
     inner: "bg-black/20 border-white/20",
     dot: "bg-red-400",
   },
+  "cuidado personal": {
+    card: "bg-fuchsia-500/25 border-fuchsia-200/60 ring-1 ring-fuchsia-200/25 shadow-lg shadow-fuchsia-500/10",
+    badge: "bg-fuchsia-500/45 border-fuchsia-200/70 text-white",
+    inner: "bg-black/20 border-white/20",
+    dot: "bg-fuchsia-400",
+  },
 };
 
 function colorForCategory(cat: string) {
@@ -111,10 +120,11 @@ function colorForCategory(cat: string) {
   const map: Record<string, string> = {
     ocio: "#60a5fa", // azul
     comida: "#34d399", // verde
-    compras: "#f472b6", // rosa
-    vivienda: "#fbbf24", // amarillo
+    entretenimiento: "#f472b6", // rosa
+    alojamiento: "#fbbf24", // amarillo
     transporte: "#22d3ee", // cyan
     prestamos: "#fb7185", // rojo
+    "cuidado personal": "#e879f9", // fucsia
   };
 
   return map[key] ?? "#a78bfa"; // violeta por defecto
@@ -247,6 +257,7 @@ export default function HomePage() {
       saving,
       goal,
       savingsProgress,
+      savingsSoFar: Number(meta.savingsSoFar) || 0,
     };
   }, [meta, txs]);
 
@@ -387,84 +398,104 @@ export default function HomePage() {
               </span>
             </div>
 
-            <div className="grid gap-6 sm:grid-cols-2">
-              <Field
-                label="Nómina Alba"
-                value={meta.incomeP1}
-                onChange={(v) => saveMeta({ ...meta, incomeP1: v })}
-                hint=""
-              />
-              <Field
-                label="Nómina Alberto "
-                value={meta.incomeP2}
-                onChange={(v) => saveMeta({ ...meta, incomeP2: v })}
-                hint=""
-              />
-              <Field
-                label="Dinero sobrante mes anterior"
-                value={meta.carryFromPrev}
-                onChange={(v) => saveMeta({ ...meta, carryFromPrev: v })}
-                hint=""
-              />
+            <div className="grid gap-6 lg:grid-cols-2">
+              {/* BLOQUE INGRESOS */}
+              <div className="space-y-6">
+                <div className="rounded-2xl border border-white/10 bg-black/15 p-4">
+                  <div className="mb-3 text-sm font-semibold text-white/90">Ingresos</div>
 
-              {/* AQUÍ: mejoramos y separamos AHORRO APARTADO y OBJETIVO */}
-              <div className="space-y-4">
-                <Field
-                  label="Ahorro apartado este mes"
-                  value={meta.savingTarget}
-                  onChange={(v) => saveMeta({ ...meta, savingTarget: v })}
-                  hint=""
-                />
-
-                <Field
-                  label="Objetivo de ahorro del mes"
-                  value={meta.savingsGoal}
-                  onChange={(v) => saveMeta({ ...meta, savingsGoal: v })}
-                  hint=""
-                />
-
-                {/* Progreso ahorro (sin romper tu diseño) */}
-                <div className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3">
-                  <div className="flex items-center justify-between">
-                    <div className="text-sm text-white/80">Progreso ahorro</div>
-                    <div className="text-sm font-semibold text-white">
-                      {meta.savingsGoal > 0
-                        ? `${Math.round(totals.savingsProgress)}%`
-                        : "—"}
-                    </div>
+                  <div className="grid gap-6 sm:grid-cols-2">
+                    <Field
+                      label="Nómina Alba"
+                      value={meta.incomeP1}
+                      onChange={(v) => saveMeta({ ...meta, incomeP1: v })}
+                      hint=""
+                    />
+                    <Field
+                      label="Nómina Alberto"
+                      value={meta.incomeP2}
+                      onChange={(v) => saveMeta({ ...meta, incomeP2: v })}
+                      hint=""
+                    />
+                    <Field
+                      label="Dinero sobrante mes anterior"
+                      value={meta.carryFromPrev}
+                      onChange={(v) => saveMeta({ ...meta, carryFromPrev: v })}
+                      hint=""
+                    />
                   </div>
+                </div>
+              </div>
 
-                  <div className="mt-2 h-2 w-full rounded-full bg-white/15 overflow-hidden">
-                    <div
-                      className="h-2 bg-sky-400"
-                      style={{ width: `${totals.savingsProgress}%` }}
+              {/* BLOQUE AHORRO */}
+              <div className="space-y-6">
+                <div className="rounded-2xl border border-white/10 bg-black/15 p-4">
+                  <div className="mb-3 text-sm font-semibold text-white/90">Ahorro</div>
+
+                  <div className="grid gap-6 sm:grid-cols-2">
+                    <Field
+                      label="Ahorro apartado este mes"
+                      value={meta.savingTarget}
+                      onChange={(v) => saveMeta({ ...meta, savingTarget: v })}
+                      hint=""
+                    />
+
+                    <Field
+                      label="Objetivo de ahorro del mes"
+                      value={meta.savingsGoal}
+                      onChange={(v) => saveMeta({ ...meta, savingsGoal: v })}
+                      hint=""
+                    />
+
+                    {/* NUEVO: informativo */}
+                    <Field
+                      label="Ahorro acumulado total (informativo)"
+                      value={meta.savingsSoFar}
+                      onChange={(v) => saveMeta({ ...meta, savingsSoFar: v })}
+                      hint=""
                     />
                   </div>
 
-                  <div className="mt-2 text-xs text-white/70">
-                    {totals.saving.toFixed(2)} € /{" "}
-                    {totals.goal.toFixed(2)} €
-                  </div>
+                  {/* Progreso ahorro */}
+                  <div className="mt-5 rounded-2xl border border-white/10 bg-black/20 px-4 py-3">
+                    <div className="flex items-center justify-between">
+                      <div className="text-sm text-white/80">Progreso ahorro</div>
+                      <div className="text-sm font-semibold text-white">
+                        {meta.savingsGoal > 0 ? `${Math.round(totals.savingsProgress)}%` : "—"}
+                      </div>
+                    </div>
 
-                  {/* Botones rápidos (UX) */}
-                  <div className="mt-3 flex gap-2">
-                    {[10, 20, 30].map((p) => (
-                      <button
-                        key={p}
-                        type="button"
-                        onClick={() => {
-                          const goal = (totals.totalIncome * p) / 100;
-                          saveMeta({ ...meta, savingsGoal: Number(goal.toFixed(2)) });
-                        }}
-                        className="flex-1 rounded-xl border border-white/10 bg-white/10 py-2 text-xs font-semibold text-white hover:bg-white/15 transition"
-                      >
-                        {p}% ingresos
-                      </button>
-                    ))}
+                    <div className="mt-2 h-2 w-full rounded-full bg-white/15 overflow-hidden">
+                      <div
+                        className="h-2 bg-sky-400"
+                        style={{ width: `${totals.savingsProgress}%` }}
+                      />
+                    </div>
+
+                    <div className="mt-2 text-xs text-white/70">
+                      {totals.saving.toFixed(2)} € / {totals.goal.toFixed(2)} €
+                    </div>
+
+                    {/* Botones rápidos */}
+                    <div className="mt-3 flex gap-2">
+                      {[10, 20, 30].map((p) => (
+                        <button
+                          key={p}
+                          type="button"
+                          onClick={() => {
+                            const goal = (totals.totalIncome * p) / 100;
+                            saveMeta({ ...meta, savingsGoal: Number(goal.toFixed(2)) });
+                          }}
+                          className="flex-1 rounded-xl border border-white/10 bg-white/10 py-2 text-xs font-semibold text-white hover:bg-white/15 transition"
+                        >
+                          {p}% ingresos
+                        </button>
+                      ))}
+                    </div>
                   </div>
 
                   {totals.saving > totals.totalIncome && (
-                    <div className="mt-2 text-xs text-red-200">
+                    <div className="mt-3 text-xs text-red-200">
                       Ojo: el ahorro supera los ingresos del mes.
                     </div>
                   )}
@@ -494,6 +525,13 @@ export default function HomePage() {
               }
               progress={totals.goal > 0 ? totals.savingsProgress : undefined}
               tone="indigo"
+            />
+
+            <Kpi
+              title="Ahorro acumulado"
+              value={`${totals.savingsSoFar.toFixed(2)} €`}
+              sub="Solo informativo"
+              tone="emerald"
             />
 
             <Kpi

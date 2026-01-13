@@ -398,107 +398,124 @@ export default function HomePage() {
               </span>
             </div>
 
-            <div className="grid gap-6 lg:grid-cols-2">
-              {/* BLOQUE INGRESOS */}
-              <div className="space-y-6">
-                <div className="rounded-2xl border border-white/10 bg-black/15 p-4">
-                  <div className="mb-3 text-sm font-semibold text-white/90">Ingresos</div>
-
-                  <div className="grid gap-6 sm:grid-cols-2">
-                    <Field
-                      label="Nómina Alba"
-                      value={meta.incomeP1}
-                      onChange={(v) => saveMeta({ ...meta, incomeP1: v })}
-                      hint=""
-                    />
-                    <Field
-                      label="Nómina Alberto"
-                      value={meta.incomeP2}
-                      onChange={(v) => saveMeta({ ...meta, incomeP2: v })}
-                      hint=""
-                    />
-                    <Field
-                      label="Dinero sobrante mes anterior"
-                      value={meta.carryFromPrev}
-                      onChange={(v) => saveMeta({ ...meta, carryFromPrev: v })}
-                      hint=""
-                    />
+            <div className="grid gap-4 lg:grid-cols-3">
+              {/* INGRESOS */}
+              <div className="rounded-3xl border border-white/10 bg-white/5 p-4">
+                <div className="mb-3 flex items-center justify-between">
+                  <div className="text-sm font-semibold text-white/90">Ingresos</div>
+                  <div className="text-xs text-white/60">
+                    Total: <span className="font-semibold text-white">{totals.totalIncome.toFixed(2)} €</span>
                   </div>
+                </div>
+
+                <div className="grid gap-4">
+                  <Field
+                    label="Nómina Alba"
+                    value={meta.incomeP1}
+                    onChange={(v) => saveMeta({ ...meta, incomeP1: v })}
+                    hint=""
+                  />
+                  <Field
+                    label="Nómina Alberto"
+                    value={meta.incomeP2}
+                    onChange={(v) => saveMeta({ ...meta, incomeP2: v })}
+                    hint=""
+                  />
+                  <Field
+                    label="Sobrante mes anterior"
+                    value={meta.carryFromPrev}
+                    onChange={(v) => saveMeta({ ...meta, carryFromPrev: v })}
+                    hint=""
+                  />
                 </div>
               </div>
 
-              {/* BLOQUE AHORRO */}
-              <div className="space-y-6">
-                <div className="rounded-2xl border border-white/10 bg-black/15 p-4">
-                  <div className="mb-3 text-sm font-semibold text-white/90">Ahorro</div>
+              {/* AHORRO DEL MES */}
+              <div className="rounded-3xl border border-white/10 bg-white/5 p-4">
+                <div className="mb-3 flex items-center justify-between">
+                  <div className="text-sm font-semibold text-white/90">Ahorro del mes</div>
+                  <span className="rounded-full border border-white/10 bg-white/10 px-2 py-1 text-xs text-white/80">
+                    {meta.savingsGoal > 0 ? `${Math.round(totals.savingsProgress)}%` : "Sin objetivo"}
+                  </span>
+                </div>
 
-                  <div className="grid gap-6 sm:grid-cols-2">
-                    <Field
-                      label="Ahorro apartado este mes"
-                      value={meta.savingTarget}
-                      onChange={(v) => saveMeta({ ...meta, savingTarget: v })}
-                      hint=""
-                    />
+                <div className="grid gap-4">
+                  <Field
+                    label="Ahorro apartado"
+                    value={meta.savingTarget}
+                    onChange={(v) => saveMeta({ ...meta, savingTarget: v })}
+                    hint=""
+                  />
+                  <Field
+                    label="Objetivo del mes"
+                    value={meta.savingsGoal}
+                    onChange={(v) => saveMeta({ ...meta, savingsGoal: v })}
+                    hint=""
+                  />
+                </div>
 
-                    <Field
-                      label="Objetivo de ahorro del mes"
-                      value={meta.savingsGoal}
-                      onChange={(v) => saveMeta({ ...meta, savingsGoal: v })}
-                      hint=""
-                    />
-
-                    {/* NUEVO: informativo */}
-                    <Field
-                      label="Ahorro acumulado total (informativo)"
-                      value={meta.savingsSoFar}
-                      onChange={(v) => saveMeta({ ...meta, savingsSoFar: v })}
-                      hint=""
+                {/* Progreso compact */
+                }
+                <div className="mt-4 rounded-2xl border border-white/10 bg-black/20 p-3">
+                  <div className="flex items-center justify-between text-xs text-white/70">
+                    <span>Progreso</span>
+                    <span className="text-white">
+                      {totals.saving.toFixed(2)} / {totals.goal.toFixed(2)} €
+                    </span>
+                  </div>
+                  <div className="mt-2 h-2 w-full rounded-full bg-white/15 overflow-hidden">
+                    <div
+                      className="h-2 bg-sky-400"
+                      style={{ width: `${totals.savingsProgress}%` }}
                     />
                   </div>
 
-                  {/* Progreso ahorro */}
-                  <div className="mt-5 rounded-2xl border border-white/10 bg-black/20 px-4 py-3">
-                    <div className="flex items-center justify-between">
-                      <div className="text-sm text-white/80">Progreso ahorro</div>
-                      <div className="text-sm font-semibold text-white">
-                        {meta.savingsGoal > 0 ? `${Math.round(totals.savingsProgress)}%` : "—"}
-                      </div>
-                    </div>
-
-                    <div className="mt-2 h-2 w-full rounded-full bg-white/15 overflow-hidden">
-                      <div
-                        className="h-2 bg-sky-400"
-                        style={{ width: `${totals.savingsProgress}%` }}
-                      />
-                    </div>
-
-                    <div className="mt-2 text-xs text-white/70">
-                      {totals.saving.toFixed(2)} € / {totals.goal.toFixed(2)} €
-                    </div>
-
-                    {/* Botones rápidos */}
-                    <div className="mt-3 flex gap-2">
-                      {[10, 20, 30].map((p) => (
-                        <button
-                          key={p}
-                          type="button"
-                          onClick={() => {
-                            const goal = (totals.totalIncome * p) / 100;
-                            saveMeta({ ...meta, savingsGoal: Number(goal.toFixed(2)) });
-                          }}
-                          className="flex-1 rounded-xl border border-white/10 bg-white/10 py-2 text-xs font-semibold text-white hover:bg-white/15 transition"
-                        >
-                          {p}% ingresos
-                        </button>
-                      ))}
-                    </div>
+                  <div className="mt-3 grid grid-cols-3 gap-2">
+                    {[10, 20, 30].map((p) => (
+                      <button
+                        key={p}
+                        type="button"
+                        onClick={() => {
+                          const goal = (totals.totalIncome * p) / 100;
+                          saveMeta({ ...meta, savingsGoal: Number(goal.toFixed(2)) });
+                        }}
+                        className="rounded-xl border border-white/10 bg-white/10 py-2 text-[11px] font-semibold text-white hover:bg-white/15 transition"
+                      >
+                        {p}%
+                      </button>
+                    ))}
                   </div>
 
                   {totals.saving > totals.totalIncome && (
-                    <div className="mt-3 text-xs text-red-200">
-                      Ojo: el ahorro supera los ingresos del mes.
+                    <div className="mt-2 text-xs text-red-200">
+                      Ojo: el ahorro supera los ingresos.
                     </div>
                   )}
+                </div>
+              </div>
+
+              {/* AHORRO ACUMULADO */}
+              <div className="rounded-3xl border border-white/10 bg-white/5 p-4">
+                <div className="mb-3 flex items-center justify-between">
+                  <div className="text-sm font-semibold text-white/90">Ahorro acumulado</div>
+                  <div className="text-xs text-white/60">Informativo</div>
+                </div>
+
+                <div className="text-3xl font-bold text-emerald-200">
+                  {totals.savingsSoFar.toFixed(2)} €
+                </div>
+
+                <div className="mt-3">
+                  <Field
+                    label="Actualizar ahorro acumulado"
+                    value={meta.savingsSoFar}
+                    onChange={(v) => saveMeta({ ...meta, savingsSoFar: v })}
+                    hint=""
+                  />
+                </div>
+
+                <div className="mt-3 rounded-2xl border border-white/10 bg-black/20 p-3 text-xs text-white/70">
+                  Consejo: aquí ponéis el total real que lleváis ahorrado (cuenta, hucha, etc.)
                 </div>
               </div>
             </div>

@@ -29,14 +29,18 @@ import {
   Cell,
 } from "recharts";
 
-
 type Person = "alba" | "alberto";
 
 type Meta = {
   incomeP1: number; // Alba
   incomeP2: number; // Alberto
   carryFromPrev: number; // sobrante del mes anterior (manual por ahora)
-  savingTarget: number; // ahorro que queréis apartar este mes
+
+  // Ya lo tenías: lo tratamos como "ahorro apartado este mes"
+  savingTarget: number;
+
+  // NUEVO: objetivo mensual de ahorro (para progreso)
+  savingsGoal: number;
 };
 
 type Tx = {
@@ -56,6 +60,7 @@ const defaultMeta: Meta = {
   incomeP2: 0,
   carryFromPrev: 0,
   savingTarget: 0,
+  savingsGoal: 0, // NUEVO
 };
 
 // Colores por categoría (fallback si no existe)
@@ -104,18 +109,16 @@ const CATEGORY_STYLES: Record<
 function colorForCategory(cat: string) {
   const key = (cat || "").trim().toLowerCase();
   const map: Record<string, string> = {
-    ocio: "#60a5fa",        // azul
-    comida: "#34d399",      // verde
-    compras: "#f472b6",     // rosa
-    vivienda: "#fbbf24",    // amarillo
-    transporte: "#22d3ee",  // cyan
-    prestamos: "#fb7185",  // rojo
+    ocio: "#60a5fa", // azul
+    comida: "#34d399", // verde
+    compras: "#f472b6", // rosa
+    vivienda: "#fbbf24", // amarillo
+    transporte: "#22d3ee", // cyan
+    prestamos: "#fb7185", // rojo
   };
 
   return map[key] ?? "#a78bfa"; // violeta por defecto
 }
-
-
 
 // Normaliza categorías tipo "Ocio" -> "ocio"
 function catKey(raw: string) {
@@ -168,7 +171,9 @@ export default function HomePage() {
         await setDoc(metaRef, defaultMeta);
         setMeta(defaultMeta);
       } else {
-        setMeta(snap.data() as Meta);
+        // IMPORTANTE: fusionamos con defaultMeta para que si falta savingsGoal no rompa
+        const data = snap.data() as Partial<Meta>;
+        setMeta({ ...defaultMeta, ...data });
       }
     });
     return () => unsub();
@@ -200,13 +205,25 @@ export default function HomePage() {
   }, [month]);
 
   const totals = useMemo(() => {
-    const totalIncome = meta.incomeP1 + meta.incomeP2 + meta.carryFromPrev;
-    const available = totalIncome - meta.savingTarget;
+    const incomeP1 = Number(meta.incomeP1) || 0;
+    const incomeP2 = Number(meta.incomeP2) || 0;
+    const carry = Number(meta.carryFromPrev) || 0;
+
+    const saving = Number(meta.savingTarget) || 0; // ahorro apartado este mes
+    const totalIncome = incomeP1 + incomeP2 + carry;
+
+    // Disponible real (lo que queda para gastar) = ingresos - ahorro - gastos
     const totalExpenses = txs.reduce(
       (acc, t) => acc + (Number(t.amount) || 0),
       0
     );
+    const available = totalIncome - saving;
     const saldoFinalMes = available - totalExpenses;
+
+    // Progreso ahorro
+    const goal = Number(meta.savingsGoal) || 0;
+    const savingsProgress =
+      goal > 0 ? Math.min(100, (saving / goal) * 100) : 0;
 
     // agrupación por categoría y concepto
     const byCat: Record<
@@ -221,7 +238,16 @@ export default function HomePage() {
       byCat[t.category].byConcept[t.concept].push(t);
     }
 
-    return { totalIncome, available, totalExpenses, saldoFinalMes, byCat };
+    return {
+      totalIncome,
+      available,
+      totalExpenses,
+      saldoFinalMes,
+      byCat,
+      saving,
+      goal,
+      savingsProgress,
+    };
   }, [meta, txs]);
 
   async function saveMeta(next: Meta) {
@@ -299,7 +325,6 @@ export default function HomePage() {
 
   const barData = pieData; // mismo dataset, distinto gráfico
 
-
   return (
     <div className="min-h-screen">
       <div className="mx-auto max-w-7xl px-4 py-8">
@@ -316,10 +341,9 @@ export default function HomePage() {
                 className="h-10 w-10 rounded-xl"
               />
 
-              <h1 className="text-2xl font-bold tracking-tight">
-                PRESUPUESTO
-              </h1>
+              <h1 className="text-2xl font-bold tracking-tight">PRESUPUESTO</h1>
             </div>
+
             <div className="flex items-center gap-3">
               {/* Selector de mes */}
               <label className="text-sm text-white/100"></label>
@@ -329,6 +353,7 @@ export default function HomePage() {
                 onChange={(e) => setMonth(e.target.value)}
                 className="rounded-xl border border-white/100 bg-yellow-100/80 px-3 py-2 text-sm text-black font-semibold outline-none focus:ring-2 focus:ring-white/20"
               />
+
               {/* Ver gastos */}
               <button
                 onClick={() => setShowAnalytics((v) => !v)}
@@ -339,15 +364,14 @@ export default function HomePage() {
 
               {/* Chip disponible con color */}
               <div className="flex items-center gap-2 whitespace-nowrap rounded-2xl border border-cyan-300/80 bg-cyan-500/10 px-4 py-2 text-sm shadow backdrop-blur">
-                <span className="text-white/70">
-                  Disponible:
-                </span>
+                <span className="text-white/70">Disponible:</span>
                 <span className="text-green-400 font-bold text-base">
                   {totals.available.toFixed(2)} €
                 </span>
               </div>
             </div>
           </div>
+
           <div className="mt-6"></div>
           <PersonPicker />
         </div>
@@ -359,7 +383,7 @@ export default function HomePage() {
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-lg font-semibold">Resumen</h2>
               <span className="rounded-full border border-indigo-200/80 bg-blue-400/45 px-3 py-1 text-xs text-white/90">
-                Ingresos / Ahorros
+                Ingresos / Ahorro
               </span>
             </div>
 
@@ -382,27 +406,102 @@ export default function HomePage() {
                 onChange={(v) => saveMeta({ ...meta, carryFromPrev: v })}
                 hint=""
               />
-              <Field
-                label="Ahorro a apartar este mes"
-                value={meta.savingTarget}
-                onChange={(v) => saveMeta({ ...meta, savingTarget: v })}
-                hint=""
-              />
+
+              {/* AQUÍ: mejoramos y separamos AHORRO APARTADO y OBJETIVO */}
+              <div className="space-y-4">
+                <Field
+                  label="Ahorro apartado este mes"
+                  value={meta.savingTarget}
+                  onChange={(v) => saveMeta({ ...meta, savingTarget: v })}
+                  hint=""
+                />
+
+                <Field
+                  label="Objetivo de ahorro del mes"
+                  value={meta.savingsGoal}
+                  onChange={(v) => saveMeta({ ...meta, savingsGoal: v })}
+                  hint=""
+                />
+
+                {/* Progreso ahorro (sin romper tu diseño) */}
+                <div className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3">
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm text-white/80">Progreso ahorro</div>
+                    <div className="text-sm font-semibold text-white">
+                      {meta.savingsGoal > 0
+                        ? `${Math.round(totals.savingsProgress)}%`
+                        : "—"}
+                    </div>
+                  </div>
+
+                  <div className="mt-2 h-2 w-full rounded-full bg-white/15 overflow-hidden">
+                    <div
+                      className="h-2 bg-sky-400"
+                      style={{ width: `${totals.savingsProgress}%` }}
+                    />
+                  </div>
+
+                  <div className="mt-2 text-xs text-white/70">
+                    {totals.saving.toFixed(2)} € /{" "}
+                    {totals.goal.toFixed(2)} €
+                  </div>
+
+                  {/* Botones rápidos (UX) */}
+                  <div className="mt-3 flex gap-2">
+                    {[10, 20, 30].map((p) => (
+                      <button
+                        key={p}
+                        type="button"
+                        onClick={() => {
+                          const goal = (totals.totalIncome * p) / 100;
+                          saveMeta({ ...meta, savingsGoal: Number(goal.toFixed(2)) });
+                        }}
+                        className="flex-1 rounded-xl border border-white/10 bg-white/10 py-2 text-xs font-semibold text-white hover:bg-white/15 transition"
+                      >
+                        {p}% ingresos
+                      </button>
+                    ))}
+                  </div>
+
+                  {totals.saving > totals.totalIncome && (
+                    <div className="mt-2 text-xs text-red-200">
+                      Ojo: el ahorro supera los ingresos del mes.
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
 
           {/* KPIs (cada tarjeta con su color) */}
           <div className="grid gap-4">
+            {/* CAMBIO: ya no "ingresos + ahorros", ahora separado */}
             <Kpi
-              title="Total ingresos + Ahorros"
+              title="Total ingresos"
               value={`${totals.totalIncome.toFixed(2)} €`}
               tone="cyan"
             />
+
+            <Kpi
+              title="Ahorro apartado"
+              value={`${totals.saving.toFixed(2)} €`}
+              sub={
+                totals.goal > 0
+                  ? `Objetivo: ${totals.goal.toFixed(2)} € · ${Math.round(
+                      totals.savingsProgress
+                    )}%`
+                  : "Sin objetivo"
+              }
+              progress={totals.goal > 0 ? totals.savingsProgress : undefined}
+              tone="indigo"
+            />
+
             <Kpi
               title="Total gastos"
               value={`${totals.totalExpenses.toFixed(2)} €`}
               tone="rose"
             />
+
             <Kpi
               title="Saldo final del mes"
               value={`${totals.saldoFinalMes.toFixed(2)} €`}
@@ -457,6 +556,7 @@ export default function HomePage() {
             </button>
           </div>
         </div>
+
         {/* ANÁLISIS GASTOS */}
         {showAnalytics && (
           <AnalyticsPanel
@@ -576,11 +676,15 @@ export default function HomePage() {
 function Kpi({
   title,
   value,
+  sub,
+  progress,
   accent,
   tone = "neutral",
 }: {
   title: string;
   value: string;
+  sub?: string;
+  progress?: number;
   accent?: boolean;
   tone?: "neutral" | "emerald" | "rose" | "cyan" | "indigo";
 }) {
@@ -603,6 +707,17 @@ function Kpi({
     >
       <div className="text-sm text-white/70">{title}</div>
       <div className="mt-1 text-2xl font-semibold tracking-tight">{value}</div>
+
+      {sub ? <div className="mt-2 text-xs text-white/70">{sub}</div> : null}
+
+      {typeof progress === "number" ? (
+        <div className="mt-3 h-2 w-full rounded-full bg-white/15 overflow-hidden">
+          <div
+            className="h-2 bg-white/70"
+            style={{ width: `${Math.max(0, Math.min(100, progress))}%` }}
+          />
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -687,7 +802,8 @@ function AnalyticsPanel({
         </div>
 
         <div className="text-sm text-white/70">
-          Movimientos: <span className="font-semibold text-white">{filteredTxs.length}</span>
+          Movimientos:{" "}
+          <span className="font-semibold text-white">{filteredTxs.length}</span>
         </div>
       </div>
 
@@ -755,14 +871,14 @@ function AnalyticsPanel({
                   }}
                 >
                   {pieData.map((entry) => (
-                    <Cell
-                      key={entry.name}
-                      fill={colorForCategory(entry.name)}
-                    />
+                    <Cell key={entry.name} fill={colorForCategory(entry.name)} />
                   ))}
                 </Pie>
                 <Tooltip
-                  formatter={(value: number | undefined) => [`${(value ?? 0).toFixed(2)} €`, "Gasto"]}
+                  formatter={(value: number | undefined) => [
+                    `${(value ?? 0).toFixed(2)} €`,
+                    "Gasto",
+                  ]}
                   contentStyle={{
                     backgroundColor: "rgba(150,2000,10,0.9)",
                     borderRadius: "12px",
@@ -800,10 +916,7 @@ function AnalyticsPanel({
                 />
                 <Bar dataKey="value" radius={[10, 10, 0, 0]}>
                   {barData.map((entry) => (
-                    <Cell
-                      key={entry.name}
-                      fill={colorForCategory(entry.name)}
-                    />
+                    <Cell key={entry.name} fill={colorForCategory(entry.name)} />
                   ))}
                 </Bar>
               </BarChart>
@@ -831,7 +944,9 @@ function AnalyticsPanel({
                   {t.concept}
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="text-sm font-semibold">{t.amount.toFixed(2)} €</div>
+                  <div className="text-sm font-semibold">
+                    {t.amount.toFixed(2)} €
+                  </div>
                   <div
                     className={`text-xs font-semibold ${
                       t.person === "alba" ? "text-blue-500" : "text-orange-500"
@@ -858,7 +973,6 @@ function AnalyticsPanel({
           items={filteredTxs.filter((t) => t.category === selectedCat)}
         />
       )}
-
     </div>
   );
 }
@@ -892,7 +1006,8 @@ function CategoryModal({
             <div className="text-xs text-white/60">Categoría</div>
             <div className="text-xl font-bold capitalize">{category}</div>
             <div className="mt-1 text-sm text-white/70">
-              {items.length} movimientos · <span className="font-semibold text-white">
+              {items.length} movimientos ·{" "}
+              <span className="font-semibold text-white">
                 {total.toFixed(2)} €
               </span>
             </div>
@@ -913,8 +1028,8 @@ function CategoryModal({
               className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3"
             >
               <div className="text-sm text-white/80">
-                <span className="text-white/60">{t.date}</span>{" "}
-                · <span className="font-semibold capitalize">{t.concept}</span>
+                <span className="text-white/60">{t.date}</span> ·{" "}
+                <span className="font-semibold capitalize">{t.concept}</span>
               </div>
 
               <div className="flex items-center gap-3">
@@ -931,12 +1046,12 @@ function CategoryModal({
           ))}
 
           {items.length === 0 && (
-            <div className="text-white/60">No hay movimientos en esta categoría.</div>
+            <div className="text-white/60">
+              No hay movimientos en esta categoría.
+            </div>
           )}
         </div>
       </div>
     </div>
   );
 }
-
-

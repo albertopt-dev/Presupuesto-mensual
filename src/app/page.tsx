@@ -222,7 +222,8 @@ export default function HomePage() {
     "prestamos", 
     "casa",
     "transporte",
-    "compras"
+    "compras",
+    "cuidado personal"
   ];
 
   // 1) Escuchar META en tiempo real

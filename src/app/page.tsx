@@ -289,7 +289,6 @@ export default function HomePage() {
     );
     const available = totalIncome - totalSavingThisMonth;
     const saldoFinalMes = available - totalExpenses; // puede ser negativo si gastas más de lo disponible
-    const balanceReal = totalIncome - totalExpenses; // balance real sin contar ahorro como "gasto"
 
     // Progreso ahorro
     const goal = Number(meta.savingsGoal) || 0;
@@ -314,7 +313,6 @@ export default function HomePage() {
       available,
       totalExpenses,
       saldoFinalMes,
-      balanceReal,
       byCat,
       saving,
       extraSaving,
@@ -777,39 +775,6 @@ export default function HomePage() {
                   </div>
                   <div className="text-xs sm:text-sm text-rose-200/80 leading-relaxed mt-auto">
                     🛍️ Gastos del mes
-                  </div>
-                </div>
-              </div>
-
-              {/* BALANCE DEL MES */}
-              <div className={`group relative overflow-hidden rounded-3xl border p-4 sm:p-7 shadow-xl backdrop-blur transition-all hover:shadow-2xl min-h-[160px] sm:min-h-[200px] flex flex-col ${
-                totals.balanceReal >= 0 
-                  ? 'border-emerald-200/30 bg-gradient-to-br from-emerald-500/20 via-green-500/10 to-emerald-400/5 hover:shadow-emerald-500/20' 
-                  : 'border-rose-200/30 bg-gradient-to-br from-rose-500/20 via-red-500/10 to-rose-400/5 hover:shadow-rose-500/20'
-              }`}>
-                <div className={`absolute top-0 right-0 -mr-10 -mt-10 h-40 w-40 rounded-full blur-3xl ${
-                  totals.balanceReal >= 0 ? 'bg-emerald-400/10' : 'bg-rose-400/10'
-                }`} />
-                <div className="relative flex-1 flex flex-col">
-                  <div className="flex items-center gap-2 sm:gap-4 mb-2 sm:mb-3">
-                    <div className={`rounded-xl p-2 sm:p-3 text-2xl sm:text-3xl backdrop-blur flex-shrink-0 ${
-                      totals.balanceReal >= 0 ? 'bg-emerald-500/30' : 'bg-rose-500/30'
-                    }`}>
-                      {totals.balanceReal >= 0 ? '📈' : '📉'}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className={`text-xs sm:text-sm font-medium mb-1 ${
-                        totals.balanceReal >= 0 ? 'text-emerald-200/90' : 'text-rose-200/90'
-                      }`}>Balance del mes</div>
-                      <div className="text-2xl sm:text-4xl font-bold text-white tracking-tight truncate">
-                        {totals.balanceReal.toFixed(2)} €
-                      </div>
-                    </div>
-                  </div>
-                  <div className={`text-xs sm:text-sm mt-auto ${
-                    totals.balanceReal >= 0 ? 'text-emerald-200/80' : 'text-rose-200/80'
-                  }`}>
-                    {totals.balanceReal >= 0 ? '✨ Chorreo de dinero' : '⚠️ No nos llega ni pa pipas'} (sin contar el ahorro)
                   </div>
                 </div>
               </div>

@@ -8,14 +8,29 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
+    // Timeout de seguridad: si no carga en 3 segundos, continuar de todos modos
+    const timeout = setTimeout(() => {
+      console.log("AuthGate timeout - continuando sin autenticación");
+      setReady(true);
+    }, 3000);
+
     const unsub = onAuthStateChanged(auth, async (u) => {
+      clearTimeout(timeout);
       if (!u) {
-        await signInAnonymously(auth);
+        try {
+          await signInAnonymously(auth);
+        } catch (error) {
+          console.error("Error en autenticación anónima:", error);
+          // Continuar de todos modos
+        }
       }
       setReady(true);
     });
 
-    return () => unsub();
+    return () => {
+      clearTimeout(timeout);
+      unsub();
+    };
   }, []);
 
   if (!ready) return <div style={{ padding: 16 }}>Cargando…</div>;

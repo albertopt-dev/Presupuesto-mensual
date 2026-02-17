@@ -736,6 +736,7 @@ export default function HomePage() {
 
         {/* RESUMEN FINANCIERO - Diseño mejorado */}
         <div className="mt-12">
+          {/* Primera fila: Ingresos, Gastos, Disponible */}
           <div className="grid gap-5 lg:grid-cols-3 mb-5">
               {/* INGRESOS */}
               <div className="group relative overflow-hidden rounded-3xl border border-cyan-200/30 bg-gradient-to-br from-cyan-500/20 via-blue-500/10 to-cyan-400/5 p-4 sm:p-7 shadow-xl backdrop-blur transition-all hover:shadow-2xl hover:shadow-cyan-500/20 min-h-[160px] sm:min-h-[200px] flex flex-col">
@@ -803,28 +804,31 @@ export default function HomePage() {
                   </div>
                 </div>
               </div>
+            </div>
 
+          {/* Segunda fila: Ahorros destacados */}
+          <div className="grid gap-5 lg:grid-cols-2">
               {/* AHORRO DEL MES */}
-              <div className="group relative overflow-hidden rounded-3xl border border-indigo-200/30 bg-gradient-to-br from-indigo-500/20 via-purple-500/10 to-indigo-400/5 p-4 sm:p-7 shadow-xl backdrop-blur transition-all hover:shadow-2xl hover:shadow-indigo-500/20 min-h-[160px] sm:min-h-[200px] flex flex-col">
-                <div className="absolute top-0 right-0 -mr-10 -mt-10 h-40 w-40 rounded-full bg-indigo-400/10 blur-3xl" />
+              <div className="group relative overflow-hidden rounded-3xl border border-indigo-200/30 bg-gradient-to-br from-indigo-500/20 via-purple-500/10 to-indigo-400/5 p-6 sm:p-9 shadow-xl backdrop-blur transition-all hover:shadow-2xl hover:shadow-indigo-500/20 min-h-[200px] sm:min-h-[240px] flex flex-col">
+                <div className="absolute top-0 right-0 -mr-10 -mt-10 h-48 w-48 rounded-full bg-indigo-400/10 blur-3xl" />
                 <div className="relative flex-1 flex flex-col">
-                  <div className="flex items-center gap-2 sm:gap-4 mb-2 sm:mb-3">
-                    <div className="rounded-xl bg-indigo-500/30 p-2 sm:p-3 text-2xl sm:text-3xl backdrop-blur flex-shrink-0">
+                  <div className="flex items-center gap-3 sm:gap-5 mb-3 sm:mb-4">
+                    <div className="rounded-2xl bg-indigo-500/30 p-3 sm:p-4 text-4xl sm:text-5xl backdrop-blur flex-shrink-0">
                       🎯
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-xs sm:text-sm font-medium text-indigo-200/90 mb-1">Ahorro del mes</div>
-                      <div className="text-2xl sm:text-4xl font-bold text-white tracking-tight truncate">
+                      <div className="text-sm sm:text-base font-medium text-indigo-200/90 mb-2">Ahorro del mes</div>
+                      <div className="text-3xl sm:text-5xl font-bold text-white tracking-tight truncate">
                         {totals.totalSavingThisMonth.toFixed(2)} €
                       </div>
                     </div>
                   </div>
                   {totals.goal > 0 ? (
                     <div className="mt-auto">
-                      <div className="text-xs sm:text-sm text-indigo-200/80 mb-2 leading-relaxed truncate">
+                      <div className="text-sm sm:text-base text-indigo-200/80 mb-3 leading-relaxed truncate">
                         Objetivo: {totals.goal.toFixed(2)} € · {Math.round(totals.savingsProgress)}%
                       </div>
-                      <div className="h-2 w-full rounded-full bg-white/10 overflow-hidden">
+                      <div className="h-3 w-full rounded-full bg-white/10 overflow-hidden">
                         <div
                           className="h-full bg-gradient-to-r from-indigo-400 to-purple-400 rounded-full transition-all duration-500"
                           style={{ width: `${Math.min(totals.savingsProgress, 100)}%` }}
@@ -832,7 +836,7 @@ export default function HomePage() {
                       </div>
                     </div>
                   ) : (
-                    <div className="text-xs sm:text-sm text-indigo-200/80 leading-relaxed mt-auto">
+                    <div className="text-sm sm:text-base text-indigo-200/80 leading-relaxed mt-auto">
                       💾 Programado: {totals.saving.toFixed(2)}€<br/>
                       ✨ Extra: {totals.extraSaving.toFixed(2)}€
                     </div>
@@ -841,27 +845,27 @@ export default function HomePage() {
               </div>
 
               {/* AHORRO ACUMULADO */}
-              <div className="group relative overflow-hidden rounded-3xl border border-amber-200/30 bg-gradient-to-br from-amber-500/20 via-yellow-500/10 to-amber-400/5 p-4 sm:p-7 shadow-xl backdrop-blur transition-all hover:shadow-2xl hover:shadow-amber-500/20 min-h-[160px] sm:min-h-[200px] flex flex-col">
-                <div className="absolute top-0 right-0 -mr-10 -mt-10 h-40 w-40 rounded-full bg-amber-400/10 blur-3xl" />
+              <div className="group relative overflow-hidden rounded-3xl border border-amber-200/30 bg-gradient-to-br from-amber-500/20 via-yellow-500/10 to-amber-400/5 p-6 sm:p-9 shadow-xl backdrop-blur transition-all hover:shadow-2xl hover:shadow-amber-500/20 min-h-[200px] sm:min-h-[240px] flex flex-col">
+                <div className="absolute top-0 right-0 -mr-10 -mt-10 h-48 w-48 rounded-full bg-amber-400/10 blur-3xl" />
                 <div className="relative flex-1 flex flex-col">
-                  <div className="flex items-center gap-2 sm:gap-4 mb-2 sm:mb-3">
-                    <div className="rounded-xl bg-amber-500/30 p-2 sm:p-3 text-2xl sm:text-3xl backdrop-blur flex-shrink-0">
+                  <div className="flex items-center gap-3 sm:gap-5 mb-3 sm:mb-4">
+                    <div className="rounded-2xl bg-amber-500/30 p-3 sm:p-4 text-4xl sm:text-5xl backdrop-blur flex-shrink-0">
                       🏆
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-xs sm:text-sm font-medium text-amber-200/90 mb-1">Ahorro acumulado</div>
-                      <div className="text-2xl sm:text-4xl font-bold text-white tracking-tight truncate">
+                      <div className="text-sm sm:text-base font-medium text-amber-200/90 mb-2">Ahorro total</div>
+                      <div className="text-3xl sm:text-5xl font-bold text-white tracking-tight truncate">
                         {totals.savingsSoFar.toFixed(2)} €
                       </div>
                     </div>
                   </div>
-                  <div className="text-xs sm:text-sm text-amber-200/80 leading-relaxed mt-auto">
-                    💰 Acumulado hasta el día de hoy
+                  <div className="text-sm sm:text-base text-amber-200/80 leading-relaxed mt-auto">
+                    💰 Acumulado largo plazo
                   </div>
                 </div>
               </div>
-            </div>
           </div>
+        </div>
 
         {/* AÑADIR GASTO - Sección Principal */}
         <div className="relative mt-8 overflow-hidden rounded-3xl border border-emerald-300/40 bg-gradient-to-br from-emerald-500/30 via-teal-500/20 to-cyan-500/15 p-4 sm:p-8 shadow-2xl backdrop-blur-lg ring-1 ring-emerald-400/20">

@@ -102,7 +102,7 @@ const CATEGORY_STYLES: Record<
     inner: "bg-black/20 border-white/20",
     dot: "bg-cyan-400",
   },
-  prestamos: {
+  "gastos fijos": {
     card: "bg-red-500/30 border-red-200/60 ring-1 ring-red-200/25 shadow-lg shadow-red-500/10",
     badge: "bg-red-500/40 border-red-200/70 text-white",
     inner: "bg-black/20 border-white/20",
@@ -136,7 +136,7 @@ function colorForCategory(cat: string) {
     entretenimiento: "#f472b6", // rosa
     alojamiento: "#fbbf24", // amarillo
     transporte: "#22d3ee", // cyan
-    prestamos: "#fb7185", // rojo
+    "gastos fijos": "#fb7185", // rojo
     "cuidado personal": "#e879f9", // fucsia
     casa: "#fb923c", // naranja
     compras: "#a855f7", // púrpura
@@ -219,7 +219,7 @@ export default function HomePage() {
     "comida",
     "ocio",
     "entretenimiento",
-    "prestamos", 
+    "gastos fijos", 
     "casa",
     "transporte",
     "compras",

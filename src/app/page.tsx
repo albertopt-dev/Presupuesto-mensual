@@ -757,6 +757,27 @@ export default function HomePage() {
                 </div>
               </div>
 
+              {/* TOTAL GASTOS */}
+              <div className="group relative overflow-hidden rounded-3xl border border-rose-200/30 bg-gradient-to-br from-rose-500/20 via-red-500/10 to-rose-400/5 p-4 sm:p-7 shadow-xl backdrop-blur transition-all hover:shadow-2xl hover:shadow-rose-500/20 min-h-[160px] sm:min-h-[200px] flex flex-col">
+                <div className="absolute top-0 right-0 -mr-10 -mt-10 h-40 w-40 rounded-full bg-rose-400/10 blur-3xl" />
+                <div className="relative flex-1 flex flex-col">
+                  <div className="flex items-center gap-2 sm:gap-4 mb-2 sm:mb-3">
+                    <div className="rounded-xl bg-rose-500/30 p-2 sm:p-3 text-2xl sm:text-3xl backdrop-blur flex-shrink-0">
+                      💸
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-xs sm:text-sm font-medium text-rose-200/90 mb-1">Total gastos</div>
+                      <div className="text-2xl sm:text-4xl font-bold text-white tracking-tight truncate">
+                        {totals.totalExpenses.toFixed(2)} €
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-xs sm:text-sm text-rose-200/80 leading-relaxed mt-auto">
+                    🛍️ Gastos del mes
+                  </div>
+                </div>
+              </div>
+
               {/* BALANCE DEL MES */}
               <div className={`group relative overflow-hidden rounded-3xl border p-4 sm:p-7 shadow-xl backdrop-blur transition-all hover:shadow-2xl min-h-[160px] sm:min-h-[200px] flex flex-col ${
                 totals.balanceReal >= 0 
@@ -785,28 +806,29 @@ export default function HomePage() {
                   <div className={`text-xs sm:text-sm mt-auto ${
                     totals.balanceReal >= 0 ? 'text-emerald-200/80' : 'text-rose-200/80'
                   }`}>
-                    {totals.balanceReal >= 0 ? '✨ Superávit' : '⚠️ Déficit'} (sin ahorro)
+                    {totals.balanceReal >= 0 ? '✨ Chorreo de dinero' : '⚠️ No nos llega ni pa pipas'} (sin contar el ahorro)
                   </div>
                 </div>
               </div>
 
-              {/* TOTAL GASTOS */}
-              <div className="group relative overflow-hidden rounded-3xl border border-rose-200/30 bg-gradient-to-br from-rose-500/20 via-red-500/10 to-rose-400/5 p-4 sm:p-7 shadow-xl backdrop-blur transition-all hover:shadow-2xl hover:shadow-rose-500/20 min-h-[160px] sm:min-h-[200px] flex flex-col">
-                <div className="absolute top-0 right-0 -mr-10 -mt-10 h-40 w-40 rounded-full bg-rose-400/10 blur-3xl" />
+              {/* DISPONIBLE PARA GASTAR */}
+              <div className="group relative overflow-hidden rounded-3xl border border-violet-200/30 bg-gradient-to-br from-violet-500/15 via-purple-500/10 to-fuchsia-500/15 p-4 sm:p-7 shadow-xl backdrop-blur transition-all hover:shadow-2xl hover:shadow-violet-500/20 min-h-[160px] sm:min-h-[200px] flex flex-col">
+                <div className="absolute top-0 right-0 -mr-10 -mt-10 h-40 w-40 rounded-full bg-violet-400/10 blur-3xl" />
                 <div className="relative flex-1 flex flex-col">
                   <div className="flex items-center gap-2 sm:gap-4 mb-2 sm:mb-3">
-                    <div className="rounded-xl bg-rose-500/30 p-2 sm:p-3 text-2xl sm:text-3xl backdrop-blur flex-shrink-0">
-                      💸
+                    <div className="rounded-xl bg-violet-500/30 p-2 sm:p-3 text-2xl sm:text-3xl backdrop-blur flex-shrink-0">
+                      💳
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-xs sm:text-sm font-medium text-rose-200/90 mb-1">Total gastos</div>
+                      <div className="text-xs sm:text-sm font-medium text-violet-200/90 mb-1 truncate">Disponible para gastar</div>
                       <div className="text-2xl sm:text-4xl font-bold text-white tracking-tight truncate">
-                        {totals.totalExpenses.toFixed(2)} €
+                        {totals.available.toFixed(2)} €
                       </div>
                     </div>
                   </div>
-                  <div className="text-xs sm:text-sm text-rose-200/80 leading-relaxed mt-auto">
-                    🛍️ Gastos del mes
+                  <div className="text-xs sm:text-sm text-violet-200/80 leading-relaxed mt-auto space-y-1">
+                    <div className="truncate">💰 Ingresos: {totals.totalIncome.toFixed(2)}€</div>
+                    <div className="truncate">🎯 Ahorro: -{totals.totalSavingThisMonth.toFixed(2)}€</div>
                   </div>
                 </div>
               </div>
@@ -856,36 +878,14 @@ export default function HomePage() {
                       🏆
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-xs sm:text-sm font-medium text-amber-200/90 mb-1">Ahorro total</div>
+                      <div className="text-xs sm:text-sm font-medium text-amber-200/90 mb-1">Ahorro acumulado</div>
                       <div className="text-2xl sm:text-4xl font-bold text-white tracking-tight truncate">
                         {totals.savingsSoFar.toFixed(2)} €
                       </div>
                     </div>
                   </div>
                   <div className="text-xs sm:text-sm text-amber-200/80 leading-relaxed mt-auto">
-                    💰 Acumulado largo plazo
-                  </div>
-                </div>
-              </div>
-
-              {/* DISPONIBLE PARA GASTAR */}
-              <div className="group relative overflow-hidden rounded-3xl border border-violet-200/30 bg-gradient-to-br from-violet-500/15 via-purple-500/10 to-fuchsia-500/15 p-4 sm:p-7 shadow-xl backdrop-blur transition-all hover:shadow-2xl hover:shadow-violet-500/20 min-h-[160px] sm:min-h-[200px] flex flex-col">
-                <div className="absolute top-0 right-0 -mr-10 -mt-10 h-40 w-40 rounded-full bg-violet-400/10 blur-3xl" />
-                <div className="relative flex-1 flex flex-col">
-                  <div className="flex items-center gap-2 sm:gap-4 mb-2 sm:mb-3">
-                    <div className="rounded-xl bg-violet-500/30 p-2 sm:p-3 text-2xl sm:text-3xl backdrop-blur flex-shrink-0">
-                      💳
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-xs sm:text-sm font-medium text-violet-200/90 mb-1 truncate">Disponible para gastar</div>
-                      <div className="text-2xl sm:text-4xl font-bold text-white tracking-tight truncate">
-                        {totals.available.toFixed(2)} €
-                      </div>
-                    </div>
-                  </div>
-                  <div className="text-xs sm:text-sm text-violet-200/80 leading-relaxed mt-auto space-y-1">
-                    <div className="truncate">💰 Ingresos: {totals.totalIncome.toFixed(2)}€</div>
-                    <div className="truncate">🎯 Ahorro: -{totals.totalSavingThisMonth.toFixed(2)}€</div>
+                    💰 Acumulado hasta el día de hoy
                   </div>
                 </div>
               </div>

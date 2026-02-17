@@ -467,8 +467,10 @@ export default function HomePage() {
               {/* Chip disponible con color */}
               <div className="hidden sm:flex items-center gap-2 whitespace-nowrap rounded-2xl border border-cyan-300/80 bg-cyan-500/10 px-4 py-2 text-sm shadow backdrop-blur">
                 <span className="text-white/70">Para gastar:</span>
-                <span className="text-green-400 font-bold text-base">
-                  {totals.available.toFixed(2)} €
+                <span className={`font-bold text-base ${
+                  totals.saldoFinalMes >= 0 ? 'text-green-400' : 'text-red-400'
+                }`}>
+                  {totals.saldoFinalMes.toFixed(2)} €
                 </span>
               </div>
               
@@ -822,14 +824,17 @@ export default function HomePage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="text-xs sm:text-sm font-medium text-violet-200/90 mb-1 truncate">Disponible para gastar</div>
-                      <div className="text-2xl sm:text-4xl font-bold text-white tracking-tight truncate">
-                        {totals.available.toFixed(2)} €
+                      <div className={`text-2xl sm:text-4xl font-bold tracking-tight truncate ${
+                        totals.saldoFinalMes >= 0 ? 'text-white' : 'text-red-300'
+                      }`}>
+                        {totals.saldoFinalMes.toFixed(2)} €
                       </div>
                     </div>
                   </div>
                   <div className="text-xs sm:text-sm text-violet-200/80 leading-relaxed mt-auto space-y-1">
                     <div className="truncate">💰 Ingresos: {totals.totalIncome.toFixed(2)}€</div>
                     <div className="truncate">🎯 Ahorro: -{totals.totalSavingThisMonth.toFixed(2)}€</div>
+                    <div className="truncate">💸 Gastado: -{totals.totalExpenses.toFixed(2)}€</div>
                   </div>
                 </div>
               </div>
@@ -916,8 +921,10 @@ export default function HomePage() {
               <div className="sm:hidden rounded-2xl border border-emerald-300/40 bg-emerald-500/20 px-4 py-2 backdrop-blur">
                 <div className="text-center">
                   <div className="text-xs text-emerald-100/70 uppercase tracking-wide">Disponible</div>
-                  <div className="text-xl font-bold text-white mt-1">
-                    {totals.available.toFixed(2)} €
+                  <div className={`text-xl font-bold mt-1 ${
+                    totals.saldoFinalMes >= 0 ? 'text-white' : 'text-red-300'
+                  }`}>
+                    {totals.saldoFinalMes.toFixed(2)} €
                   </div>
                 </div>
               </div>

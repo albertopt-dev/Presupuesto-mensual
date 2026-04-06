@@ -1,4 +1,7 @@
+<<<<<<< HEAD
 
+=======
+>>>>>>> c7e7dee76227d691720065d54ce7d18d08b7693f
 # Presupuesto Mensual PWA
 
 **Presupuesto Mensual** es una aplicación web progresiva (PWA) desarrollada con Next.js y React, diseñada para la gestión colaborativa y visual del presupuesto doméstico de dos personas. Permite registrar, analizar y optimizar los gastos e ingresos mensuales, así como el ahorro, de forma sencilla, visual y desde cualquier dispositivo.

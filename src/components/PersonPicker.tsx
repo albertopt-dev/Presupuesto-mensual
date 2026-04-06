@@ -17,7 +17,7 @@ export default function PersonPicker() {
     const [names, setNames] = useState<string[]>(["alba", "alberto"]);
     const [newName, setNewName] = useState("");
 
-    const handlePick = (p: string) => {
+    const handlePick = (p: Person) => {
       setPerson(p);
       localStorage.setItem("person", p);
     };
@@ -47,23 +47,23 @@ export default function PersonPicker() {
       : "bg-green-500/20 text-green-200 border-green-400/30";
 
   if (!person) {
-    return (
-      <div className="flex flex-wrap gap-3">
-        <button
-          onClick={() => choose("ALBA")}
-          className="rounded-xl border border-blue-400/30 bg-blue-700/50 px-4 py-2 text-blue-100 font-semibold shadow-sm backdrop-blur hover:bg-blue-500/20 transition"
-        >
-          SOY ALBA
-        </button>
-        <button
-          onClick={() => choose("ALBERTO")}
-          className="rounded-xl border border-green-300/90 bg-green-500/50 px-4 py-2 text-green-200 font-semibold shadow-sm backdrop-blur hover:bg-green-400/20 transition"
-        >
-          SOY ALBERTO
-        </button>
-      </div>
-    );
-  }
+  return (
+    <div className="flex flex-wrap gap-3">
+      <button
+        onClick={() => handlePick("ALBA")}
+        className="rounded-xl border border-blue-400/30 bg-blue-700/50 px-4 py-2 text-blue-100 font-semibold shadow-sm backdrop-blur hover:bg-blue-500/20 transition"
+      >
+        SOY ALBA
+      </button>
+      <button
+        onClick={() => handlePick("ALBERTO")}
+        className="rounded-xl border border-green-300/90 bg-green-500/50 px-4 py-2 text-green-200 font-semibold shadow-sm backdrop-blur hover:bg-green-400/20 transition"
+      >
+        SOY ALBERTO
+      </button>
+    </div>
+  );
+}
 
   return (
     <div className="flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/5 p-4 shadow-lg backdrop-blur">

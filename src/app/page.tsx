@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Image from "next/image";
 import PersonPicker, { getPerson } from "@/components/PersonPicker";
 import { db, auth } from "@/lib/firebase";
 import { signOut } from "firebase/auth";
@@ -454,18 +453,12 @@ export default function HomePage() {
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             {/* IZQUIERDA: icono + título juntos */}
             <div className="flex items-center gap-3">
-              <Image
-                src="/logo.png"
-                alt="Logo"
-                width={40}
-                height={40}
-                className="h-10 w-10 rounded-xl"
-              />
+              <span className="text-3xl">💰</span>
               <h1 className="text-2xl font-bold text-white">Presupuesto</h1>
             </div>
 
             {/* DERECHA: controles */}
-            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3 overflow-hidden">
               {/* Selector de mes */}
               <input
                 type="month"
@@ -474,7 +467,7 @@ export default function HomePage() {
                   console.log('🗓️ Cambiando mes a:', e.target.value);
                   setMonth(e.target.value);
                 }}
-                className="rounded-xl border border-white/100 bg-yellow-100/80 px-3 py-2 text-sm text-black font-semibold outline-none focus:ring-2 focus:ring-white/20"
+                className="rounded-xl border border-white/100 bg-yellow-100/80 px-3 py-2 text-sm text-black font-semibold outline-none focus:ring-2 focus:ring-white/20 max-w-[150px] sm:max-w-none"
               />
 
               {/* Chip disponible con color */}

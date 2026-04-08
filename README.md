@@ -1,46 +1,96 @@
-<<<<<<< HEAD
+# 💰 Presupuesto Mensual
 
-=======
->>>>>>> c7e7dee76227d691720065d54ce7d18d08b7693f
-# Presupuesto Mensual PWA
+App web para llevar el control del presupuesto doméstico entre dos personas. Desarrollada como proyecto personal con Next.js, Firebase y Tailwind CSS.
 
-**Presupuesto Mensual** es una aplicación web progresiva (PWA) desarrollada con Next.js y React, diseñada para la gestión colaborativa y visual del presupuesto doméstico de dos personas. Permite registrar, analizar y optimizar los gastos e ingresos mensuales, así como el ahorro, de forma sencilla, visual y desde cualquier dispositivo.
+---
 
-## Características principales
+## ¿Qué hace esta app?
 
-- **Gestión de ingresos y gastos**: Añade, clasifica y visualiza todos los movimientos mensuales, diferenciando por persona y categoría (comida, ocio, entretenimiento, gastos fijos, casa, transporte, compras, cuidado personal, etc.).
-- **Ahorro mensual y acumulado**: Define objetivos de ahorro mensuales, registra ahorro programado y extra, y consolida el ahorro al final de cada mes. Visualiza el progreso y el total acumulado.
-- **Análisis visual avanzado**: Gráficas interactivas (tarta y barras) para analizar la distribución y evolución de los gastos por categoría, persona y concepto. Filtros avanzados para búsquedas rápidas.
-- **Resumen financiero en tiempo real**: Calcula automáticamente ingresos, gastos, ahorro y saldo disponible para gastar, mostrando alertas si el ahorro supera los ingresos o si el saldo es negativo.
-- **Gestión multiusuario**: Cada usuario puede identificarse (Alba o Alberto) y sus gastos quedan marcados y diferenciados visualmente.
-- **Experiencia PWA**: Instalación en escritorio y móvil, funcionamiento offline, recarga y actualización forzada de la app, iconos personalizados y soporte para notificaciones.
-- **Autenticación anónima y sincronización en la nube**: Todos los datos se almacenan y sincronizan en Firebase Firestore, permitiendo acceso seguro y en tiempo real desde cualquier dispositivo.
-- **Interfaz moderna y accesible**: UI responsive, accesible y optimizada para dispositivos móviles y escritorio, con diseño visual atractivo y personalización por categorías.
+Permite registrar ingresos y gastos mes a mes, ver cuánto queda disponible para gastar, y hacer seguimiento del ahorro. Todo en tiempo real y sincronizado entre dispositivos.
 
-## Tecnologías utilizadas
+---
 
-- **Next.js** (React) para la estructura de la app y renderizado SSR/CSR.
-- **Firebase** (Firestore y Auth) para almacenamiento en la nube y autenticación anónima.
-- **Tailwind CSS** para el diseño visual y la personalización de la interfaz.
-- **Recharts** para la visualización de datos y gráficas interactivas.
-- **next-pwa** para convertir la app en una PWA completa.
+## Funcionalidades principales
 
-## Flujo de usuario
+- **Registro de movimientos** — Añade gastos e ingresos por categoría (comida, ocio, transporte, casa...) e identifica quién lo hizo (Alba o Alberto)
+- **Resumen financiero automático** — Calcula al instante cuánto entra, cuánto sale y cuánto queda disponible
+- **Seguimiento del ahorro** — Define un objetivo mensual y registra el ahorro acumulado
+- **Gráficas interactivas** — Visualiza la distribución de gastos con gráficas de tarta y barras
+- **Múltiples meses** — Navega entre meses y consolida el ahorro al cierre de cada uno
+- **PWA instalable** — Funciona como app en móvil y escritorio, incluso sin conexión
 
-1. Selecciona tu usuario (Alba o Alberto) para personalizar la experiencia y registrar tus movimientos.
-2. Añade ingresos, gastos y ahorros, clasificando cada movimiento por categoría y concepto.
-3. Consulta el resumen financiero, el saldo disponible y el progreso de ahorro mensual y acumulado.
-4. Analiza tus gastos con gráficas y filtros avanzados para tomar mejores decisiones.
-5. Consolida el ahorro al final de cada mes y actualiza el total acumulado.
-6. Disfruta de la app en cualquier dispositivo, incluso sin conexión.
+---
 
-## Instalación y despliegue
+## Tecnologías usadas
 
-1. Clona el repositorio y ejecuta las dependencias con tu gestor favorito (npm, yarn, pnpm, bun).
-2. Configura las variables de entorno de Firebase en un archivo `.env.local`.
-3. Inicia el servidor de desarrollo y accede a la app en [http://localhost:3000](http://localhost:3000).
-4. Puedes instalar la app como PWA en tu dispositivo para acceso directo y uso offline.
+| Tecnología | Para qué se usa |
+|---|---|
+| Next.js | Framework principal (React) |
+| Firebase Firestore | Base de datos en la nube |
+| Firebase Auth | Login con email y contraseña |
+| Tailwind CSS | Estilos y diseño visual |
+| Recharts | Gráficas de gastos |
+| next-pwa | Convertir la app en PWA |
 
-## Licencia
+---
 
-Proyecto privado para uso personal/doméstico.
+## Cómo arrancar el proyecto en local
+
+**1. Clona el repositorio**
+```bash
+git clone https://github.com/albertopt-dev/Presupuesto-mensual.git
+cd Presupuesto-mensual/presupuesto-pwa
+```
+
+**2. Instala las dependencias**
+```bash
+npm install
+```
+
+**3. Crea el archivo de variables de entorno**
+
+Crea un archivo `.env.local` en la raíz con tus credenciales de Firebase:
+```
+NEXT_PUBLIC_FIREBASE_API_KEY=...
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=...
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=...
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=...
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=...
+NEXT_PUBLIC_FIREBASE_APP_ID=...
+```
+
+**4. Arranca el servidor de desarrollo**
+```bash
+npm run dev
+```
+
+Abre [http://localhost:3000](http://localhost:3000) en tu navegador.
+
+---
+
+## Despliegue
+
+La app está desplegada en **Vercel**. Cada push a `main` despliega automáticamente.
+
+---
+
+## Estructura del proyecto
+
+```
+presupuesto-pwa/
+├── src/
+│   ├── app/          # Página principal y estilos globales
+│   ├── components/   # Componentes reutilizables (AuthForm, AuthGate, PersonPicker)
+│   └── lib/          # Configuración de Firebase y hooks
+├── public/           # Iconos y assets estáticos
+├── firestore.rules   # Reglas de seguridad de Firestore
+└── next.config.mjs   # Configuración de Next.js y PWA
+```
+
+---
+
+## Notas
+
+- Proyecto personal, no orientado a producción pública
+- Los datos de cada usuario están aislados por UID (no se comparten entre cuentas)
+- El archivo `serviceAccountKey.json` nunca debe subirse a git (está en `.gitignore`)

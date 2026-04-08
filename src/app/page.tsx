@@ -527,7 +527,7 @@ export default function HomePage() {
         {/* RESUMEN */}
         <div className="grid gap-4 lg:grid-cols-2">
           {/* Card resumen inputs */}
-          <div className="lg:col-span-2 rounded-3xl border border-white/80 bg-indigo-500/40 p-4 shadow-xl backdrop-blur">
+          <div className="lg:col-span-2 rounded-3xl border border-white/80 bg-indigo-500/40 p-4 shadow-xl backdrop-blur overflow-hidden">
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-lg font-semibold">Resumen</h2>
               <span className="rounded-full border border-indigo-200/80 bg-blue-400/45 px-3 py-1 text-xs text-white/90">
@@ -615,7 +615,7 @@ export default function HomePage() {
                 )}
 
                 <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <label className="block text-sm font-medium text-white/90 mb-2">📦 Programado</label>
                       <div className="relative">

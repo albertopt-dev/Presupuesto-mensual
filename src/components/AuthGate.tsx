@@ -19,6 +19,3 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
   if (!user) return <AuthForm onAuth={() => {}} />;
   return <>{children}</>;
 }
-
-
-//@/*": ["./src/*"]

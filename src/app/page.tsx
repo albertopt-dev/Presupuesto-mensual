@@ -3,7 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import PersonPicker, { getPerson } from "@/components/PersonPicker";
-import { db } from "@/lib/firebase";
+import { db, auth } from "@/lib/firebase";
+import { signOut } from "firebase/auth";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 import {
   doc,
@@ -512,6 +513,16 @@ export default function HomePage() {
                   🔄
                 </button>
                 <span className="text-xs text-white/60 hidden sm:block">Actualizar</span>
+              </div>
+              <div className="flex flex-col items-center gap-1">
+                <button
+                  onClick={() => signOut(auth)}
+                  className="rounded-xl border border-red-400/50 bg-red-500/20 px-3 py-2 text-xs font-bold text-red-200 hover:bg-red-500/30 transition"
+                  title="Cerrar sesión"
+                >
+                  🚪
+                </button>
+                <span className="text-xs text-white/60 hidden sm:block">Salir</span>
               </div>
             </div>
           </div>

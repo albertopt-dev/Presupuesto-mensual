@@ -714,17 +714,20 @@ export default function HomePage() {
 
             {/* AHORRO ACUMULADO - Sección especial */}
             <div className="mt-6 rounded-3xl border border-amber-200/20 bg-gradient-to-br from-amber-500/10 to-orange-400/5 p-6 backdrop-blur">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                 <div className="flex items-center gap-4">
                   <div className="rounded-xl bg-amber-500/20 p-3">
                     🏆
                   </div>
                   <div>
                     <h3 className="text-xl font-bold text-white">Ahorro total acumulado</h3>
+                    <div className="text-3xl font-bold text-amber-200 sm:hidden mt-1">
+                      {totals.savingsSoFar.toFixed(2)} €
+                    </div>
                     <p className="text-amber-200 text-sm">Tu progreso de ahorro a largo plazo</p>
                   </div>
                 </div>
-                <div className="text-right">
+                <div className="hidden sm:block text-right">
                   <div className="text-3xl font-bold text-amber-200">
                     {totals.savingsSoFar.toFixed(2)} €
                   </div>

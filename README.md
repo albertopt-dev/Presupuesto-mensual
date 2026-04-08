@@ -1,6 +1,6 @@
 # 💰 Presupuesto Mensual
 
-App web para llevar el control del presupuesto doméstico entre dos personas. Desarrollada como proyecto personal con Next.js, Firebase y Tailwind CSS.
+App web para llevar el control del presupuesto doméstico. Desarrollada como proyecto personal con Next.js, Firebase y Tailwind CSS.
 
 ---
 
@@ -18,19 +18,6 @@ Permite registrar ingresos y gastos mes a mes, ver cuánto queda disponible para
 - **Gráficas interactivas** — Visualiza la distribución de gastos con gráficas de tarta y barras
 - **Múltiples meses** — Navega entre meses y consolida el ahorro al cierre de cada uno
 - **PWA instalable** — Funciona como app en móvil y escritorio, incluso sin conexión
-
----
-
-## Tecnologías usadas
-
-| Tecnología | Para qué se usa |
-|---|---|
-| Next.js | Framework principal (React) |
-| Firebase Firestore | Base de datos en la nube |
-| Firebase Auth | Login con email y contraseña |
-| Tailwind CSS | Estilos y diseño visual |
-| Recharts | Gráficas de gastos |
-| next-pwa | Convertir la app en PWA |
 
 ---
 
@@ -81,7 +68,7 @@ presupuesto-pwa/
 ├── src/
 │   ├── app/          # Página principal y estilos globales
 │   ├── components/   # Componentes reutilizables (AuthForm, AuthGate, PersonPicker)
-│   └── lib/          # Configuración de Firebase y hooks
+│   └── lib/          # Configuración de Firebase
 ├── public/           # Iconos y assets estáticos
 ├── firestore.rules   # Reglas de seguridad de Firestore
 └── next.config.mjs   # Configuración de Next.js y PWA
@@ -93,4 +80,3 @@ presupuesto-pwa/
 
 - Proyecto personal, no orientado a producción pública
 - Los datos de cada usuario están aislados por UID (no se comparten entre cuentas)
-- El archivo `serviceAccountKey.json` nunca debe subirse a git (está en `.gitignore`)

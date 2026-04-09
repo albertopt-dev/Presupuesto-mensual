@@ -201,6 +201,18 @@ export default function HomePage() {
   const [concept, setConcept] = useState("");
   const [amount, setAmount] = useState<string>(""); // Cambiar a string vacío
 
+  // Categorías personalizadas
+  const [customCategories, setCustomCategories] = useState<string[]>(() => {
+    if (typeof window === "undefined") return [];
+    try {
+      const stored = localStorage.getItem("custom_categories");
+      if (stored) return JSON.parse(stored);
+    } catch {}
+    return [];
+  });
+  const [showNewCat, setShowNewCat] = useState(false);
+  const [newCatInput, setNewCatInput] = useState("");
+
   // Reset de inputs al cambiar de mes (recomendado)
   useEffect(() => {
     setDate(getCurrentDate()); // Usar fecha actual en lugar del día 1
@@ -220,13 +232,25 @@ export default function HomePage() {
   const CATEGORY_OPTIONS = [
     "comida",
     "ocio",
-    "entretenimiento",
-    "gastos fijos", 
+    "gastos fijos",
     "casa",
     "transporte",
     "compras",
-    "cuidado personal"
+    "cuidado personal",
   ];
+
+  const allCategories = [...CATEGORY_OPTIONS, ...customCategories];
+
+  function handleAddCategory() {
+    const name = newCatInput.trim().toLowerCase();
+    if (!name || allCategories.includes(name)) return;
+    const updated = [...customCategories, name];
+    setCustomCategories(updated);
+    localStorage.setItem("custom_categories", JSON.stringify(updated));
+    setCategory(name);
+    setNewCatInput("");
+    setShowNewCat(false);
+  }
 
   // 1) Escuchar META en tiempo real
   const user = useCurrentUser();
@@ -373,7 +397,7 @@ export default function HomePage() {
     if (!user) return;
     const person = getPerson();
     if (!person) {
-      alert("Elige primero si eres Alba o Alberto.");
+      alert("Selecciona tu nombre antes de añadir un gasto.");
       return;
     }
     if (!concept.trim()) {
@@ -961,16 +985,48 @@ export default function HomePage() {
                       </div>
                     </div>
                     <select
-                      value={category}
-                      onChange={(e) => setCategory(e.target.value)}
+                      value={showNewCat ? "__new__" : category}
+                      onChange={(e) => {
+                        if (e.target.value === "__new__") {
+                          setShowNewCat(true);
+                        } else {
+                          setCategory(e.target.value);
+                          setShowNewCat(false);
+                        }
+                      }}
                       className="w-full rounded-xl border-2 border-purple-400/30 bg-black/40 px-4 py-3 text-base font-semibold text-white outline-none transition-all focus:border-purple-400/60 focus:bg-black/50 focus:ring-4 focus:ring-purple-400/20"
                     >
-                      {CATEGORY_OPTIONS.map((cat) => (
+                      {allCategories.map((cat) => (
                         <option key={cat} value={cat} className="bg-black text-white capitalize">
                           {cat}
                         </option>
                       ))}
+                      <option value="__new__" className="bg-black text-purple-300">
+                        + Nueva categoría...
+                      </option>
                     </select>
+                    {showNewCat && (
+                      <div className="flex gap-2 mt-2">
+                        <input
+                          type="text"
+                          value={newCatInput}
+                          onChange={(e) => setNewCatInput(e.target.value)}
+                          onKeyDown={(e) => e.key === "Enter" && handleAddCategory()}
+                          placeholder="Nombre de la categoría..."
+                          maxLength={30}
+                          autoFocus
+                          className="flex-1 rounded-xl border border-white/10 bg-white/10 px-3 py-2 text-sm text-white placeholder-white/40 outline-none focus:border-purple-400/50"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleAddCategory}
+                          disabled={!newCatInput.trim()}
+                          className="rounded-xl border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/20 disabled:opacity-40"
+                        >
+                          Añadir
+                        </button>
+                      </div>
+                    )}
                   </label>
                 </div>
 

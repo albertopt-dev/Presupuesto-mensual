@@ -55,6 +55,7 @@ export default function PersonPicker({ uid, onNamesChange }: { uid: string; onNa
     const updated = [...names, name];
     setNames(updated);
     localStorage.setItem(`person_picker_names_${uid}`, JSON.stringify(updated));
+    onNamesChange?.(updated);
     setNewName("");
   };
 

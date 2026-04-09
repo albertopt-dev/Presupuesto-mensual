@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 import PersonPicker, { getPerson, loadNames } from "@/components/PersonPicker";
 import { db, auth } from "@/lib/firebase";
 import { signOut } from "firebase/auth";
@@ -481,6 +482,8 @@ export default function HomePage() {
 
     setConcept("");
     setAmount("");
+    setDate(getCurrentDate());
+    toast.success("Gasto añadido correctamente");
   }
 
   async function deleteExpense(id: string) {

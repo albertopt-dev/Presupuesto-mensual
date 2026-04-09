@@ -1,5 +1,6 @@
 import "./globals.css";
 import AuthGate from "@/components/AuthGate";
+import { Toaster } from "sonner";
 
 export const metadata = {
   manifest: "/manifest.json",
@@ -19,6 +20,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <AuthGate>{children}</AuthGate>
+        <Toaster theme="dark" position="bottom-center" richColors />
       </body>
     </html>
   );

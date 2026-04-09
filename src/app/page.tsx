@@ -1267,7 +1267,7 @@ export default function HomePage() {
         {showAnalytics && (
           <AnalyticsPanel
             month={month}
-            categories={Array.from(new Set(txs.map((t) => t.category))).sort()}
+            categories={allCategories}
             filterCat={filterCat}
             setFilterCat={setFilterCat}
             filterPerson={filterPerson}
@@ -1563,6 +1563,7 @@ function AnalyticsPanel({
                       boxShadow: "0 8px 32px rgba(0,0,0,0.3)",
                     }}
                     labelStyle={{ color: "rgba(255,255,255,0.9)", fontWeight: "600" }}
+                    itemStyle={{ color: "rgba(255,255,255,0.9)" }}
                   />
                 </PieChart>
               </ResponsiveContainer>

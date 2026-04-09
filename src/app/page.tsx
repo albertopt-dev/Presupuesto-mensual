@@ -15,6 +15,7 @@ import {
   orderBy,
   serverTimestamp,
   deleteDoc,
+  getDoc,
 } from "firebase/firestore";
 
 import {
@@ -282,7 +283,13 @@ export default function HomePage() {
     if (!user) return;
     setNames(loadNames(user.uid));
     try {
-      const sc = localStorage.getItem(`custom_categories_${user.uid}`);
+      const legacyKey = "custom_categories";
+      const uidKey = `custom_categories_${user.uid}`;
+      if (localStorage.getItem(legacyKey) && !localStorage.getItem(uidKey)) {
+        localStorage.setItem(uidKey, localStorage.getItem(legacyKey)!);
+        localStorage.removeItem(legacyKey);
+      }
+      const sc = localStorage.getItem(uidKey);
       setCustomCategories(sc ? JSON.parse(sc) : []);
       const sd = localStorage.getItem(`deleted_base_categories_${user.uid}`);
       setDeletedBaseCategories(sd ? JSON.parse(sd) : []);
@@ -296,8 +303,15 @@ export default function HomePage() {
     const unsub = onSnapshot(metaRef, async (snap) => {
       if (!snap.exists()) {
         console.log('⚠️ No hay datos meta para este mes, creando defaults...');
-        await setDoc(metaRef, { ...defaultMeta, ownerId: user.uid });
-        setMeta(defaultMeta);
+        const [y, m] = month.split("-").map(Number);
+        const prevDate = new Date(y, m - 2);
+        const prevMonth = `${prevDate.getFullYear()}-${String(prevDate.getMonth() + 1).padStart(2, "0")}`;
+        const prevMetaRef = doc(db, `budgets/${BUDGET_ID}/months/${prevMonth}/meta/main`);
+        const prevSnap = await getDoc(prevMetaRef);
+        const inheritedSavings = prevSnap.exists() ? (prevSnap.data().savingsSoFar ?? 0) : 0;
+        const initial = { ...defaultMeta, savingsSoFar: inheritedSavings, ownerId: user.uid };
+        await setDoc(metaRef, initial);
+        setMeta({ ...defaultMeta, savingsSoFar: inheritedSavings });
       } else {
         const data = snap.data() as Partial<Meta>;
         console.log('✅ Meta cargada:', data);
@@ -476,7 +490,12 @@ export default function HomePage() {
       db,
       `budgets/${BUDGET_ID}/months/${month}/transactions/${id}`
     );
-    await deleteDoc(ref);
+    try {
+      await deleteDoc(ref);
+    } catch (err) {
+      console.error("Error al eliminar gasto:", err);
+      alert("No se pudo eliminar el gasto. Inténtalo de nuevo.");
+    }
   }
 
   const filteredTxs = useMemo(() => {

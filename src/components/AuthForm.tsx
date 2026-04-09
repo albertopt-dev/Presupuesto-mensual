@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, setPersistence, browserLocalPersistence, browserSessionPersistence } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 
 export default function AuthForm({ onAuth }: { onAuth: () => void }) {
@@ -10,6 +10,7 @@ export default function AuthForm({ onAuth }: { onAuth: () => void }) {
   const [isRegister, setIsRegister] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,6 +20,7 @@ export default function AuthForm({ onAuth }: { onAuth: () => void }) {
       if (isRegister) {
         await createUserWithEmailAndPassword(auth, email, password);
       } else {
+        await setPersistence(auth, rememberMe ? browserLocalPersistence : browserSessionPersistence);
         await signInWithEmailAndPassword(auth, email, password);
       }
       onAuth();
@@ -71,6 +73,18 @@ export default function AuthForm({ onAuth }: { onAuth: () => void }) {
             required
           />
         </div>
+
+        {!isRegister && (
+          <label className="flex items-center gap-2.5 cursor-pointer mb-5 w-fit">
+            <input
+              type="checkbox"
+              checked={rememberMe}
+              onChange={e => setRememberMe(e.target.checked)}
+              className="w-4 h-4 rounded accent-blue-500 cursor-pointer"
+            />
+            <span className="text-sm text-white/50">Recuérdame</span>
+          </label>
+        )}
 
         {error && (
           <div className="mb-4 px-4 py-2 rounded-xl bg-red-500/10 border border-red-500/20 text-red-300 text-sm">

@@ -21,7 +21,7 @@ const COLORS = [
   },
 ];
 
-function loadNames(uid: string): string[] {
+export function loadNames(uid: string): string[] {
   if (typeof window === "undefined") return [];
   try {
     const stored = localStorage.getItem(`person_picker_names_${uid}`);

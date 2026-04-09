@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import PersonPicker, { getPerson } from "@/components/PersonPicker";
+import PersonPicker, { getPerson, loadNames } from "@/components/PersonPicker";
 import { db, auth } from "@/lib/firebase";
 import { signOut } from "firebase/auth";
 import { useCurrentUser } from "@/lib/useCurrentUser";
@@ -183,6 +183,7 @@ export default function HomePage() {
   const [filterCat, setFilterCat] = useState<string>("all");
   const [filterPerson, setFilterPerson] = useState<string>("all");
   const [search, setSearch] = useState("");
+  const [names, setNames] = useState<string[]>([]);
 
   const [selectedCat, setSelectedCat] = useState<string | null>(null);
 
@@ -254,6 +255,9 @@ export default function HomePage() {
 
   // 1) Escuchar META en tiempo real
   const user = useCurrentUser();
+  useEffect(() => {
+    if (user) setNames(loadNames(user.uid));
+  }, [user]);
   useEffect(() => {
     if (!user) return;
     const BUDGET_ID = getBudgetId(user.uid);
@@ -573,8 +577,9 @@ export default function HomePage() {
                 </div>
 
                 <div className="space-y-4">
+                  {names[0] && (
                   <div className="group">
-                    <label className="block text-sm font-medium text-white/90 mb-2">👩‍💼 Alba</label>
+                    <label className="block text-sm font-medium text-white/90 mb-2">{names[0].charAt(0).toUpperCase() + names[0].slice(1)}</label>
                     <div className="relative">
                       <input
                         type="number"
@@ -586,9 +591,10 @@ export default function HomePage() {
                       <span className="absolute right-3 top-1/2 -translate-y-1/2 text-white/70 text-sm">€</span>
                     </div>
                   </div>
-                  
+                  )}
+                  {names[1] && (
                   <div className="group">
-                    <label className="block text-sm font-medium text-white/90 mb-2">👨‍💻 Alberto</label>
+                    <label className="block text-sm font-medium text-white/90 mb-2">{names[1].charAt(0).toUpperCase() + names[1].slice(1)}</label>
                     <div className="relative">
                       <input
                         type="number"
@@ -600,6 +606,7 @@ export default function HomePage() {
                       <span className="absolute right-3 top-1/2 -translate-y-1/2 text-white/70 text-sm">€</span>
                     </div>
                   </div>
+                  )}
                 </div>
               </div>
 
@@ -1150,6 +1157,7 @@ export default function HomePage() {
             setSelectedCat={setSelectedCat}
             pieData={pieData}
             barData={barData}
+            names={names}
           />
         )}
 
@@ -1266,6 +1274,7 @@ function AnalyticsPanel({
   barData,
   selectedCat,
   setSelectedCat,
+  names,
 }: {
   month: string;
   categories: string[];
@@ -1280,6 +1289,7 @@ function AnalyticsPanel({
   barData: { name: string; value: number }[];
   selectedCat: string | null;
   setSelectedCat: (v: string | null) => void;
+  names: string[];
 }) {
   // Calcular estadísticas
   const totalFiltered = filteredTxs.reduce((sum, t) => sum + t.amount, 0);
@@ -1357,9 +1367,10 @@ function AnalyticsPanel({
               onChange={(e) => setFilterPerson(e.target.value)}
               className="mt-2 w-full rounded-xl border border-white/20 bg-black/30 px-4 py-2.5 text-white backdrop-blur outline-none transition-all focus:border-cyan-400/50 focus:ring-2 focus:ring-cyan-400/20"
             >
-              <option value="all">Ambos</option>
-              <option value="alba">Alba</option>
-              <option value="alberto">Alberto</option>
+              <option value="all">Todos</option>
+              {names.map((n) => (
+                <option key={n} value={n}>{n.charAt(0).toUpperCase() + n.slice(1)}</option>
+              ))}
             </select>
           </div>
 

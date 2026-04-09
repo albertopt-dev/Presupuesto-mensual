@@ -5,7 +5,7 @@ import { createUserWithEmailAndPassword, signInWithEmailAndPassword, setPersiste
 import { auth } from "@/lib/firebase";
 
 const CHARS = "012345678920356485976584987546+-×÷=%$€#@!?∑∞√πΩΔ∂∫";
-const FONT_SIZE = 20;
+const FONT_SIZE = 32;
 const SPEED = 0.2; // columnas bajan ~0.6 celdas por frame a 60fps
 
 export default function AuthForm({ onAuth }: { onAuth: () => void }) {
@@ -61,7 +61,7 @@ export default function AuthForm({ onAuth }: { onAuth: () => void }) {
         const y = drops[i] * FONT_SIZE;
 
         // Carácter cabeza: más brillante
-        ctx!.fillStyle = `hsla(${h}, 80%, 80%, 0.9)`;
+        ctx!.fillStyle = `hsla(${h}, 85%, 90%, 0.95)`;
         ctx!.fillText(char, x, y);
 
         // Estela: múltiples caracteres desvanecidos

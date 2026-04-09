@@ -1,8 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, setPersistence, browserLocalPersistence, browserSessionPersistence } from "firebase/auth";
 import { auth } from "@/lib/firebase";
+
+const CHARS = "0123456789+-×÷=%$€#@!?";
+const FONT_SIZE = 14;
+const SPEED = 0.6; // columnas bajan ~0.6 celdas por frame a 60fps
 
 export default function AuthForm({ onAuth }: { onAuth: () => void }) {
   const [email, setEmail] = useState("");
@@ -11,6 +15,80 @@ export default function AuthForm({ onAuth }: { onAuth: () => void }) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    let animId: number;
+    let cols: number;
+    let drops: number[];   // posición Y de cada columna (en celdas)
+    let hues: number[];    // hue base por columna
+
+    function init() {
+      canvas!.width  = window.innerWidth;
+      canvas!.height = window.innerHeight;
+      cols  = Math.floor(canvas!.width / FONT_SIZE);
+      drops = Array.from({ length: cols }, () => Math.random() * -50);
+      hues  = Array.from({ length: cols }, (_, i) => (i / cols) * 360);
+    }
+
+    let frame = 0;
+    function draw() {
+      animId = requestAnimationFrame(draw);
+      frame++;
+
+      // Fondo semitransparente para el efecto de estela
+      ctx!.fillStyle = "rgba(10, 10, 20, 0.2)";
+      ctx!.fillRect(0, 0, canvas!.width, canvas!.height);
+
+      ctx!.font = `${FONT_SIZE}px monospace`;
+
+      for (let i = 0; i < cols; i++) {
+        // Rotar hue suavemente: cada columna a distinta velocidad
+        hues[i] = (hues[i] + 0.15 + i * 0.003) % 360;
+        const h = hues[i];
+
+        // Carácter aleatorio cada ciertos frames para no cambiar cada frame
+        const char = frame % 4 === 0
+          ? CHARS[Math.floor(Math.random() * CHARS.length)]
+          : CHARS[Math.floor(drops[i] * 7) % CHARS.length];
+
+        const x = i * FONT_SIZE;
+        const y = drops[i] * FONT_SIZE;
+
+        // Carácter cabeza: más brillante
+        ctx!.fillStyle = `hsla(${h}, 80%, 80%, 0.9)`;
+        ctx!.fillText(char, x, y);
+
+        // Estela: más tenue
+        ctx!.fillStyle = `hsla(${h}, 70%, 55%, 0.45)`;
+        const trailChar = CHARS[Math.floor(Math.random() * CHARS.length)];
+        ctx!.fillText(trailChar, x, y - FONT_SIZE);
+
+        drops[i] += SPEED;
+
+        // Reiniciar columna al salir de pantalla (con desfase aleatorio)
+        if (drops[i] * FONT_SIZE > canvas!.height && Math.random() > 0.975) {
+          drops[i] = Math.random() * -20;
+        }
+      }
+    }
+
+    init();
+    draw();
+
+    const onResize = () => init();
+    window.addEventListener("resize", onResize);
+
+    return () => {
+      cancelAnimationFrame(animId);
+      window.removeEventListener("resize", onResize);
+    };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,16 +116,23 @@ export default function AuthForm({ onAuth }: { onAuth: () => void }) {
   return (
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-gradient-to-br from-gray-900 via-slate-900 to-gray-900">
 
+      {/* Canvas Matrix RGB */}
+      <canvas
+        ref={canvasRef}
+        className="absolute inset-0 pointer-events-none"
+        style={{ zIndex: 0, opacity: 0.55 }}
+      />
+
       {/* Blobs de fondo */}
-      <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-600/30 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-5%] w-80 h-80 bg-purple-600/30 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute top-[40%] right-[20%] w-64 h-64 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-600/30 rounded-full blur-3xl pointer-events-none" style={{ zIndex: 1 }} />
+      <div className="absolute bottom-[-10%] right-[-5%] w-80 h-80 bg-purple-600/30 rounded-full blur-3xl pointer-events-none" style={{ zIndex: 1 }} />
+      <div className="absolute top-[40%] right-[20%] w-64 h-64 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none" style={{ zIndex: 1 }} />
 
       {/* Caja */}
       <form
         onSubmit={handleSubmit}
-        style={{ animation: "authEnter 0.5s ease-out both" }}
-        className="relative z-10 w-full max-w-sm mx-4 px-8 py-10 bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl"
+        style={{ animation: "authEnter 0.5s ease-out both", zIndex: 2 }}
+        className="relative w-full max-w-sm mx-4 px-8 py-10 bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl"
       >
         <div className="text-center mb-8">
           <div className="text-5xl mb-3">💰</div>

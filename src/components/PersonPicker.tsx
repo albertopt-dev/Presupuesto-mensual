@@ -21,32 +21,32 @@ const COLORS = [
   },
 ];
 
-function loadNames(): string[] {
+function loadNames(uid: string): string[] {
   if (typeof window === "undefined") return [];
   try {
-    const stored = localStorage.getItem("person_picker_names");
+    const stored = localStorage.getItem(`person_picker_names_${uid}`);
     if (stored) return JSON.parse(stored);
   } catch {}
   return [];
 }
 
-export function getPerson(): string | null {
+export function getPerson(uid: string): string | null {
   if (typeof window === "undefined") return null;
-  const p = localStorage.getItem("person");
+  const p = localStorage.getItem(`person_${uid}`);
   if (!p) return null;
-  const names = loadNames();
+  const names = loadNames(uid);
   if (names.includes(p)) return p;
   return null;
 }
 
-export default function PersonPicker() {
-  const [names, setNames] = useState<string[]>(() => loadNames());
-  const [person, setPerson] = useState<string | null>(() => getPerson());
+export default function PersonPicker({ uid }: { uid: string }) {
+  const [names, setNames] = useState<string[]>(() => loadNames(uid));
+  const [person, setPerson] = useState<string | null>(() => getPerson(uid));
   const [newName, setNewName] = useState("");
 
   const handlePick = (name: string) => {
     setPerson(name);
-    localStorage.setItem("person", name);
+    localStorage.setItem(`person_${uid}`, name);
   };
 
   const handleAdd = () => {
@@ -54,7 +54,7 @@ export default function PersonPicker() {
     if (!name || names.includes(name) || names.length >= 4) return;
     const updated = [...names, name];
     setNames(updated);
-    localStorage.setItem("person_picker_names", JSON.stringify(updated));
+    localStorage.setItem(`person_picker_names_${uid}`, JSON.stringify(updated));
     setNewName("");
   };
 
@@ -115,7 +115,7 @@ export default function PersonPicker() {
 
       <button
         onClick={() => {
-          localStorage.removeItem("person");
+          localStorage.removeItem(`person_${uid}`);
           setPerson(null);
         }}
         className="rounded-xl border border-white/10 bg-white/10 px-3 py-2 text-sm hover:bg-white/15 transition"

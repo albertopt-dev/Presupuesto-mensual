@@ -395,7 +395,7 @@ export default function HomePage() {
 
   async function addExpense() {
     if (!user) return;
-    const person = getPerson();
+    const person = getPerson(user.uid);
     if (!person) {
       alert("Selecciona tu nombre antes de añadir un gasto.");
       return;
@@ -545,7 +545,7 @@ export default function HomePage() {
           </div>
 
           <div className="mt-6"></div>
-          <PersonPicker />
+          {user && <PersonPicker uid={user.uid} />}
         </div>
 
         {/* RESUMEN */}

@@ -164,6 +164,16 @@ function catStyle(cat: string) {
   );
 }
 
+const CATEGORY_OPTIONS = [
+  "comida",
+  "ocio",
+  "gastos fijos",
+  "casa",
+  "transporte",
+  "compras",
+  "cuidado personal",
+];
+
 export default function HomePage() {
   const [meta, setMeta] = useState<Meta>(defaultMeta);
   const [txs, setTxs] = useState<Tx[]>([]);
@@ -203,16 +213,11 @@ export default function HomePage() {
   const [amount, setAmount] = useState<string>(""); // Cambiar a string vacío
 
   // Categorías personalizadas
-  const [customCategories, setCustomCategories] = useState<string[]>(() => {
-    if (typeof window === "undefined") return [];
-    try {
-      const stored = localStorage.getItem("custom_categories");
-      if (stored) return JSON.parse(stored);
-    } catch {}
-    return [];
-  });
+  const [customCategories, setCustomCategories] = useState<string[]>([]);
+  const [deletedBaseCategories, setDeletedBaseCategories] = useState<string[]>([]);
   const [showNewCat, setShowNewCat] = useState(false);
   const [newCatInput, setNewCatInput] = useState("");
+  const [showManageCats, setShowManageCats] = useState(false);
 
   // Reset de inputs al cambiar de mes (recomendado)
   useEffect(() => {
@@ -229,34 +234,59 @@ export default function HomePage() {
     setAmount(normalizedValue);
   };
 
-  // Opciones de categorías disponibles
-  const CATEGORY_OPTIONS = [
-    "comida",
-    "ocio",
-    "gastos fijos",
-    "casa",
-    "transporte",
-    "compras",
-    "cuidado personal",
+  const allCategories = [
+    ...CATEGORY_OPTIONS.filter((c) => !deletedBaseCategories.includes(c)),
+    ...customCategories,
   ];
 
-  const allCategories = [...CATEGORY_OPTIONS, ...customCategories];
-
   function handleAddCategory() {
+    if (!user) return;
     const name = newCatInput.trim().toLowerCase();
     if (!name || allCategories.includes(name)) return;
     const updated = [...customCategories, name];
     setCustomCategories(updated);
-    localStorage.setItem("custom_categories", JSON.stringify(updated));
+    localStorage.setItem(`custom_categories_${user.uid}`, JSON.stringify(updated));
     setCategory(name);
     setNewCatInput("");
     setShowNewCat(false);
   }
 
+  function handleDeleteCategory(cat: string, isBase: boolean) {
+    if (!user) return;
+    if (isBase) {
+      const updated = [...deletedBaseCategories, cat];
+      setDeletedBaseCategories(updated);
+      localStorage.setItem(`deleted_base_categories_${user.uid}`, JSON.stringify(updated));
+    } else {
+      const updated = customCategories.filter((c) => c !== cat);
+      setCustomCategories(updated);
+      localStorage.setItem(`custom_categories_${user.uid}`, JSON.stringify(updated));
+    }
+    if (category === cat) {
+      const remaining = CATEGORY_OPTIONS.filter(
+        (c) => !deletedBaseCategories.includes(c) && (isBase ? c !== cat : true)
+      );
+      setCategory(remaining[0] ?? customCategories.filter((c) => c !== cat)[0] ?? "");
+    }
+  }
+
+  function handleRestoreBaseCategories() {
+    if (!user) return;
+    setDeletedBaseCategories([]);
+    localStorage.removeItem(`deleted_base_categories_${user.uid}`);
+  }
+
   // 1) Escuchar META en tiempo real
   const user = useCurrentUser();
   useEffect(() => {
-    if (user) setNames(loadNames(user.uid));
+    if (!user) return;
+    setNames(loadNames(user.uid));
+    try {
+      const sc = localStorage.getItem(`custom_categories_${user.uid}`);
+      setCustomCategories(sc ? JSON.parse(sc) : []);
+      const sd = localStorage.getItem(`deleted_base_categories_${user.uid}`);
+      setDeletedBaseCategories(sd ? JSON.parse(sd) : []);
+    } catch {}
   }, [user]);
   useEffect(() => {
     if (!user) return;
@@ -986,52 +1016,122 @@ export default function HomePage() {
                       <div className="rounded-xl bg-purple-500/30 p-2 text-xl sm:text-2xl backdrop-blur">
                         🏷️
                       </div>
-                      <div>
-                        <span className="text-sm font-bold text-white">Categoría</span>
-                        <p className="text-xs text-purple-100/60">Tipo de gasto</p>
-                      </div>
-                    </div>
-                    <select
-                      value={showNewCat ? "__new__" : category}
-                      onChange={(e) => {
-                        if (e.target.value === "__new__") {
-                          setShowNewCat(true);
-                        } else {
-                          setCategory(e.target.value);
-                          setShowNewCat(false);
-                        }
-                      }}
-                      className="w-full rounded-xl border-2 border-purple-400/30 bg-black/40 px-4 py-3 text-base font-semibold text-white outline-none transition-all focus:border-purple-400/60 focus:bg-black/50 focus:ring-4 focus:ring-purple-400/20"
-                    >
-                      {allCategories.map((cat) => (
-                        <option key={cat} value={cat} className="bg-black text-white capitalize">
-                          {cat}
-                        </option>
-                      ))}
-                      <option value="__new__" className="bg-black text-purple-300">
-                        + Nueva categoría...
-                      </option>
-                    </select>
-                    {showNewCat && (
-                      <div className="flex gap-2 mt-2">
-                        <input
-                          type="text"
-                          value={newCatInput}
-                          onChange={(e) => setNewCatInput(e.target.value)}
-                          onKeyDown={(e) => e.key === "Enter" && handleAddCategory()}
-                          placeholder="Nombre de la categoría..."
-                          maxLength={30}
-                          autoFocus
-                          className="flex-1 rounded-xl border border-white/10 bg-white/10 px-3 py-2 text-sm text-white placeholder-white/40 outline-none focus:border-purple-400/50"
-                        />
+                      <div className="flex-1 flex items-center justify-between">
+                        <div>
+                          <span className="text-sm font-bold text-white">Categoría</span>
+                          <p className="text-xs text-purple-100/60">Tipo de gasto</p>
+                        </div>
                         <button
                           type="button"
-                          onClick={handleAddCategory}
-                          disabled={!newCatInput.trim()}
-                          className="rounded-xl border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/20 disabled:opacity-40"
+                          onClick={() => { setShowManageCats((m) => !m); setShowNewCat(false); }}
+                          className="text-xs text-purple-300/60 hover:text-purple-200 transition"
                         >
-                          Añadir
+                          {showManageCats ? "Cerrar" : "Gestionar"}
                         </button>
+                      </div>
+                    </div>
+                    {!showManageCats && (
+                      <>
+                        <select
+                          value={showNewCat ? "__new__" : category}
+                          onChange={(e) => {
+                            if (e.target.value === "__new__") {
+                              setShowNewCat(true);
+                            } else {
+                              setCategory(e.target.value);
+                              setShowNewCat(false);
+                            }
+                          }}
+                          className="w-full rounded-xl border-2 border-purple-400/30 bg-black/40 px-4 py-3 text-base font-semibold text-white outline-none transition-all focus:border-purple-400/60 focus:bg-black/50 focus:ring-4 focus:ring-purple-400/20"
+                        >
+                          {allCategories.map((cat) => (
+                            <option key={cat} value={cat} className="bg-black text-white capitalize">
+                              {cat}
+                            </option>
+                          ))}
+                          <option value="__new__" className="bg-black text-purple-300">
+                            + Nueva categoría...
+                          </option>
+                        </select>
+                        {showNewCat && (
+                          <div className="flex gap-2 mt-2">
+                            <input
+                              type="text"
+                              value={newCatInput}
+                              onChange={(e) => setNewCatInput(e.target.value)}
+                              onKeyDown={(e) => e.key === "Enter" && handleAddCategory()}
+                              placeholder="Nombre de la categoría..."
+                              maxLength={30}
+                              autoFocus
+                              className="flex-1 rounded-xl border border-white/10 bg-white/10 px-3 py-2 text-sm text-white placeholder-white/40 outline-none focus:border-purple-400/50"
+                            />
+                            <button
+                              type="button"
+                              onClick={handleAddCategory}
+                              disabled={!newCatInput.trim()}
+                              className="rounded-xl border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/20 disabled:opacity-40"
+                            >
+                              Añadir
+                            </button>
+                          </div>
+                        )}
+                      </>
+                    )}
+                    {showManageCats && (
+                      <div className="rounded-xl border border-white/10 bg-black/20 p-3 space-y-3">
+                        <div>
+                          <p className="text-xs text-purple-300/60 uppercase tracking-wide mb-2">Base</p>
+                          <div className="flex flex-wrap gap-2">
+                            {CATEGORY_OPTIONS.map((cat) => {
+                              const deleted = deletedBaseCategories.includes(cat);
+                              return (
+                                <div
+                                  key={cat}
+                                  className={`flex items-center gap-1 rounded-lg border px-2 py-1 text-xs ${deleted ? "border-white/5 bg-white/5 text-white/25 line-through" : "border-purple-400/20 bg-purple-500/10 text-purple-200"}`}
+                                >
+                                  <span className="capitalize">{cat}</span>
+                                  {!deleted && (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleDeleteCategory(cat, true)}
+                                      className="ml-1 text-white/30 hover:text-red-300 transition"
+                                    >
+                                      ✕
+                                    </button>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                          {deletedBaseCategories.length > 0 && (
+                            <button
+                              type="button"
+                              onClick={handleRestoreBaseCategories}
+                              className="mt-2 text-xs text-purple-300/60 hover:text-purple-200 transition underline underline-offset-2"
+                            >
+                              Restaurar categorías base
+                            </button>
+                          )}
+                        </div>
+                        {customCategories.length > 0 && (
+                          <div>
+                            <p className="text-xs text-amber-300/60 uppercase tracking-wide mb-2">Personalizadas</p>
+                            <div className="flex flex-wrap gap-2">
+                              {customCategories.map((cat) => (
+                                <div key={cat} className="flex items-center gap-1 rounded-lg border border-amber-400/20 bg-amber-500/10 px-2 py-1 text-xs text-amber-200">
+                                  <span className="capitalize">{cat}</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDeleteCategory(cat, false)}
+                                    className="ml-1 text-white/30 hover:text-red-300 transition"
+                                  >
+                                    ✕
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )}
                   </label>

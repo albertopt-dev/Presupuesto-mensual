@@ -4,9 +4,9 @@ import { useState, useEffect, useRef } from "react";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, setPersistence, browserLocalPersistence, browserSessionPersistence } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 
-const CHARS = "01234567892035648597658498754635214589963224700+-×÷=%$€#@!?∑∞√πΩΔ∂∫";
-const FONT_SIZE = 14;
-const SPEED = 0.3; // columnas bajan ~0.6 celdas por frame a 60fps
+const CHARS = "012345678920356485976584987546+-×÷=%$€#@!?∑∞√πΩΔ∂∫";
+const FONT_SIZE = 20;
+const SPEED = 0.2; // columnas bajan ~0.6 celdas por frame a 60fps
 
 export default function AuthForm({ onAuth }: { onAuth: () => void }) {
   const [email, setEmail] = useState("");

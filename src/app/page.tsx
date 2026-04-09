@@ -1210,7 +1210,7 @@ export default function HomePage() {
                 >
                   <div className="relative rounded-xl bg-gradient-to-r from-emerald-600 to-cyan-600 px-6 sm:px-8 py-4 sm:py-5 transition-all">
                     <div className="flex items-center justify-center gap-2 sm:gap-3">
-                      <span className="text-xl sm:text-2xl">✅</span>
+                      <span className="text-xl sm:text-2xl"></span>
                       <span className="text-lg sm:text-xl font-bold text-white tracking-tight">
                         Registrar Gasto
                       </span>

@@ -12,7 +12,7 @@ Permite registrar ingresos y gastos mes a mes, ver cuánto queda disponible para
 
 ## Funcionalidades principales
 
-- **Registro de movimientos** — Añade gastos e ingresos por categoría (comida, ocio, transporte, casa...) e identifica quién lo hizo (Alba o Alberto)
+- **Registro de movimientos** — Añade gastos e ingresos por categoría (comida, ocio, transporte, casa...) e identifica quién lo hizo. Los nombres de las personas se añaden manualmente al entrar en la app (máximo 4), sin estar ligados a ninguna cuenta concreta
 - **Resumen financiero automático** — Calcula al instante cuánto entra, cuánto sale y cuánto queda disponible
 - **Seguimiento del ahorro** — Define un objetivo mensual y registra el ahorro acumulado
 - **Gráficas interactivas** — Visualiza la distribución de gastos con gráficas de tarta y barras

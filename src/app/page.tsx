@@ -980,10 +980,10 @@ export default function HomePage() {
 
               {/* Segunda fila: Categoría y Concepto */}
               <div className="grid gap-4 sm:grid-cols-2">
-                <div className="rounded-2xl border border-purple-300/30 bg-gradient-to-br from-purple-500/15 to-pink-500/10 p-5 backdrop-blur">
+                <div className="rounded-2xl border border-purple-300/30 bg-gradient-to-br from-purple-500/15 to-pink-500/10 p-4 sm:p-6 backdrop-blur">
                   <label className="block">
                     <div className="flex items-center gap-3 mb-3">
-                      <div className="rounded-lg bg-purple-500/30 p-2 text-xl backdrop-blur">
+                      <div className="rounded-xl bg-purple-500/30 p-2 text-xl sm:text-2xl backdrop-blur">
                         🏷️
                       </div>
                       <div>
@@ -1037,10 +1037,10 @@ export default function HomePage() {
                   </label>
                 </div>
 
-                <div className="rounded-2xl border border-amber-300/30 bg-gradient-to-br from-amber-500/15 to-orange-500/10 p-5 backdrop-blur">
+                <div className="rounded-2xl border border-amber-300/30 bg-gradient-to-br from-amber-500/15 to-orange-500/10 p-4 sm:p-6 backdrop-blur">
                   <label className="block">
                     <div className="flex items-center gap-3 mb-3">
-                      <div className="rounded-lg bg-amber-500/30 p-2 text-xl backdrop-blur">
+                      <div className="rounded-xl bg-amber-500/30 p-2 text-xl sm:text-2xl backdrop-blur">
                         📝
                       </div>
                       <div>
@@ -1060,10 +1060,10 @@ export default function HomePage() {
               </div>
 
               {/* Tercera fila: Fecha */}
-              <div className="rounded-2xl border border-blue-300/30 bg-gradient-to-br from-blue-500/15 to-indigo-500/10 p-5 backdrop-blur">
+              <div className="rounded-2xl border border-blue-300/30 bg-gradient-to-br from-blue-500/15 to-indigo-500/10 p-4 sm:p-6 backdrop-blur">
                 <label className="block">
                   <div className="flex items-center gap-3 mb-3">
-                    <div className="rounded-lg bg-blue-500/30 p-2 text-xl backdrop-blur">
+                    <div className="rounded-xl bg-blue-500/30 p-2 text-xl sm:text-2xl backdrop-blur">
                       📅
                     </div>
                     <div>

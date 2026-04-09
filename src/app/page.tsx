@@ -549,7 +549,7 @@ export default function HomePage() {
           </div>
 
           <div className="mt-6"></div>
-          {user && <PersonPicker uid={user.uid} />}
+          {user && <PersonPicker uid={user.uid} onNamesChange={setNames} />}
         </div>
 
         {/* RESUMEN */}

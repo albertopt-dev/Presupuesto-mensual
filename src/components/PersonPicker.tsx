@@ -39,7 +39,7 @@ export function getPerson(uid: string): string | null {
   return null;
 }
 
-export default function PersonPicker({ uid }: { uid: string }) {
+export default function PersonPicker({ uid, onNamesChange }: { uid: string; onNamesChange?: (names: string[]) => void }) {
   const [names, setNames] = useState<string[]>(() => loadNames(uid));
   const [person, setPerson] = useState<string | null>(() => getPerson(uid));
   const [newName, setNewName] = useState("");
@@ -58,6 +58,17 @@ export default function PersonPicker({ uid }: { uid: string }) {
     setNewName("");
   };
 
+  const handleDelete = (name: string) => {
+    const updated = names.filter((n) => n !== name);
+    setNames(updated);
+    localStorage.setItem(`person_picker_names_${uid}`, JSON.stringify(updated));
+    if (person === name) {
+      localStorage.removeItem(`person_${uid}`);
+      setPerson(null);
+    }
+    onNamesChange?.(updated);
+  };
+
   const colorIndex = names.indexOf(person ?? "");
   const badge = COLORS[colorIndex >= 0 ? colorIndex : 0].badge;
 
@@ -67,13 +78,21 @@ export default function PersonPicker({ uid }: { uid: string }) {
         {names.length > 0 && (
           <div className="flex flex-wrap gap-3">
             {names.map((name, i) => (
-              <button
-                key={name}
-                onClick={() => handlePick(name)}
-                className={`rounded-xl border px-4 py-2 font-semibold shadow-sm backdrop-blur transition ${COLORS[i % COLORS.length].button}`}
-              >
-                SOY {name.toUpperCase()}
-              </button>
+              <div key={name} className="flex items-center gap-1">
+                <button
+                  onClick={() => handlePick(name)}
+                  className={`rounded-xl border px-4 py-2 font-semibold shadow-sm backdrop-blur transition ${COLORS[i % COLORS.length].button}`}
+                >
+                  SOY {name.toUpperCase()}
+                </button>
+                <button
+                  onClick={() => handleDelete(name)}
+                  className="rounded-lg border border-white/10 bg-white/10 px-2 py-1 text-xs text-white/40 hover:bg-red-500/20 hover:text-red-300 transition"
+                  title={`Eliminar ${name}`}
+                >
+                  ✕
+                </button>
+              </div>
             ))}
           </div>
         )}

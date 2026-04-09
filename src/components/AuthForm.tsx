@@ -42,7 +42,7 @@ export default function AuthForm({ onAuth }: { onAuth: () => void }) {
       frame++;
 
       // Fondo semitransparente para el efecto de estela
-      ctx!.fillStyle = "rgba(10, 10, 20, 0.2)";
+      ctx!.fillStyle = "rgba(10, 10, 20, 0.05)";
       ctx!.fillRect(0, 0, canvas!.width, canvas!.height);
 
       ctx!.font = `${FONT_SIZE}px monospace`;
@@ -64,15 +64,21 @@ export default function AuthForm({ onAuth }: { onAuth: () => void }) {
         ctx!.fillStyle = `hsla(${h}, 80%, 80%, 0.9)`;
         ctx!.fillText(char, x, y);
 
-        // Estela: más tenue
-        ctx!.fillStyle = `hsla(${h}, 70%, 55%, 0.45)`;
-        const trailChar = CHARS[Math.floor(Math.random() * CHARS.length)];
-        ctx!.fillText(trailChar, x, y - FONT_SIZE);
+        // Estela: múltiples caracteres desvanecidos
+        for (let t = 1; t <= 8; t++) {
+          const alpha = 0.45 * (1 - t / 8);
+          ctx!.fillStyle = `hsla(${h}, 70%, 55%, ${alpha})`;
+          const trailChar = CHARS[Math.floor(Math.random() * CHARS.length)];
+          ctx!.fillText(trailChar, x, y - FONT_SIZE * t);
+        }
+        if (drops[i] * FONT_SIZE > canvas!.height && Math.random() > 0.990) {
+          drops[i] = Math.random() * -20;
+        }
 
         drops[i] += SPEED;
 
         // Reiniciar columna al salir de pantalla (con desfase aleatorio)
-        if (drops[i] * FONT_SIZE > canvas!.height && Math.random() > 0.975) {
+        if (drops[i] * FONT_SIZE > canvas!.height && Math.random() > 0.990) {
           drops[i] = Math.random() * -20;
         }
       }

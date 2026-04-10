@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { LogOut } from "lucide-react";
 import { toast } from "sonner";
 import PersonPicker, { getPerson, loadNames } from "@/components/PersonPicker";
 import { db, auth } from "@/lib/firebase";
@@ -616,7 +617,7 @@ export default function HomePage() {
                   className="rounded-xl border border-red-400/50 bg-red-500/20 px-3 py-2 text-xs font-bold text-red-200 hover:bg-red-500/30 transition"
                   title="Cerrar sesión"
                 >
-                  🚪
+                  <LogOut size={16} className="text-red-400" />
                 </button>
                 <span className="text-xs text-white/60 hidden sm:block">Salir</span>
               </div>

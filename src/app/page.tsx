@@ -312,19 +312,32 @@ export default function HomePage() {
     console.log('🔥 Firebase path:', `budgets/${BUDGET_ID}/months/${month}/meta/main`);
     const metaRef = doc(db, `budgets/${BUDGET_ID}/months/${month}/meta/main`);
     const unsub = onSnapshot(metaRef, async (snap) => {
+      console.log("📸 SNAPSHOT META:", {
+        exists: snap.exists(),
+        fromCache: snap.metadata.fromCache,
+        hasPendingWrites: snap.metadata.hasPendingWrites,
+        data: snap.exists() ? snap.data() : null,
+        onlineStatus: navigator.onLine
+      });
       if (!snap.exists()) {
+        console.log("❌ SNAP NO EXISTE - fromCache:", snap.metadata.fromCache, "online:", navigator.onLine);
         if (!snap.metadata.fromCache && navigator.onLine) {
+          console.log("🔍 VERIFICANDO CON GETDOC...");
           try {
             // Verificar con getDoc independiente antes de sobrescribir,
             // para evitar que una respuesta contaminada del SW destruya datos reales.
             const verifySnap = await getDoc(metaRef);
+            console.log("🔍 GETDOC RESULTADO:", {
+              exists: verifySnap.exists(),
+              data: verifySnap.exists() ? verifySnap.data() : null
+            });
             if (verifySnap.exists()) {
-              // El documento existe — el onSnapshot recibió un falso negativo.
-              // Cargamos los datos reales sin tocar Firestore.
+              console.log("✅ GETDOC CONFIRMA QUE EXISTE - cargando sin setDoc");
               const data = verifySnap.data() as Partial<Meta>;
               setMeta({ ...defaultMeta, ...data });
               return;
             }
+            console.log("💥 GETDOC TAMBIÉN DICE QUE NO EXISTE - ESCRIBIENDO DEFAULTS");
             // Confirmado por dos fuentes que no existe: crear defaults.
             const [y, m] = month.split("-").map(Number);
             const prevDate = new Date(y, m - 2);
@@ -340,6 +353,7 @@ export default function HomePage() {
           }
         }
       } else {
+        console.log("✅ SNAP EXISTE - cargando datos:", snap.data());
         const data = snap.data() as Partial<Meta>;
         setMeta({ ...defaultMeta, ...data });
       }

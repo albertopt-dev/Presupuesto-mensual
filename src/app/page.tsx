@@ -509,11 +509,13 @@ export default function HomePage() {
         ownerId: user.uid,
       });
       console.log("ADDOC OK, ejecutando reset");
-      setConcept("");
-      setAmount("");
-      setDate(getCurrentDate());
-      console.log("RESET OK, ejecutando toast");
-      toast.success("✅ Gasto añadido correctamente");
+      setTimeout(() => {
+        setConcept("");
+        setAmount("");
+        setDate(getCurrentDate());
+        console.log("RESET OK, ejecutando toast");
+        toast.success("✅ Gasto añadido correctamente");
+      }, 0);
     } catch (err) {
       console.log("CATCH EJECUTADO:", err);
       console.error("Error al añadir gasto:", err);

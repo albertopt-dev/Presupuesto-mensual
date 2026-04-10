@@ -304,15 +304,23 @@ export default function HomePage() {
     const unsub = onSnapshot(metaRef, async (snap) => {
       if (!snap.exists()) {
         console.log('⚠️ No hay datos meta para este mes, creando defaults...');
-        const [y, m] = month.split("-").map(Number);
-        const prevDate = new Date(y, m - 2);
-        const prevMonth = `${prevDate.getFullYear()}-${String(prevDate.getMonth() + 1).padStart(2, "0")}`;
-        const prevMetaRef = doc(db, `budgets/${BUDGET_ID}/months/${prevMonth}/meta/main`);
-        const prevSnap = await getDoc(prevMetaRef);
-        const inheritedSavings = prevSnap.exists() ? (prevSnap.data().savingsSoFar ?? 0) : 0;
-        const initial = { ...defaultMeta, savingsSoFar: inheritedSavings, ownerId: user.uid };
-        await setDoc(metaRef, initial);
-        setMeta({ ...defaultMeta, savingsSoFar: inheritedSavings });
+        if (!snap.metadata.fromCache && navigator.onLine) {
+          try {
+            const [y, m] = month.split("-").map(Number);
+            const prevDate = new Date(y, m - 2);
+            const prevMonth = `${prevDate.getFullYear()}-${String(prevDate.getMonth() + 1).padStart(2, "0")}`;
+            const prevMetaRef = doc(db, `budgets/${BUDGET_ID}/months/${prevMonth}/meta/main`);
+            const prevSnap = await getDoc(prevMetaRef);
+            const inheritedSavings = prevSnap.exists() ? (prevSnap.data().savingsSoFar ?? 0) : 0;
+            const initial = { ...defaultMeta, savingsSoFar: inheritedSavings, ownerId: user.uid };
+            await setDoc(metaRef, initial);
+            setMeta({ ...defaultMeta, savingsSoFar: inheritedSavings });
+          } catch (err) {
+            console.error("Error al inicializar meta (sin conexión o error de red):", err);
+          }
+        } else {
+          console.log('⏸️ Cliente offline o snapshot desde caché — no se escriben defaults');
+        }
       } else {
         const data = snap.data() as Partial<Meta>;
         console.log('✅ Meta cargada:', data);

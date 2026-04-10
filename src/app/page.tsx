@@ -320,38 +320,8 @@ export default function HomePage() {
         onlineStatus: navigator.onLine
       });
       if (!snap.exists()) {
-        console.log("❌ SNAP NO EXISTE - fromCache:", snap.metadata.fromCache, "online:", navigator.onLine);
-        if (!snap.metadata.fromCache && navigator.onLine) {
-          console.log("🔍 VERIFICANDO CON GETDOC...");
-          try {
-            // Verificar con getDoc independiente antes de sobrescribir,
-            // para evitar que una respuesta contaminada del SW destruya datos reales.
-            const verifySnap = await getDoc(metaRef);
-            console.log("🔍 GETDOC RESULTADO:", {
-              exists: verifySnap.exists(),
-              data: verifySnap.exists() ? verifySnap.data() : null
-            });
-            if (verifySnap.exists()) {
-              console.log("✅ GETDOC CONFIRMA QUE EXISTE - cargando sin setDoc");
-              const data = verifySnap.data() as Partial<Meta>;
-              setMeta({ ...defaultMeta, ...data });
-              return;
-            }
-            console.log("💥 GETDOC TAMBIÉN DICE QUE NO EXISTE - ESCRIBIENDO DEFAULTS");
-            // Confirmado por dos fuentes que no existe: crear defaults.
-            const [y, m] = month.split("-").map(Number);
-            const prevDate = new Date(y, m - 2);
-            const prevMonth = `${prevDate.getFullYear()}-${String(prevDate.getMonth() + 1).padStart(2, "0")}`;
-            const prevMetaRef = doc(db, `budgets/${BUDGET_ID}/months/${prevMonth}/meta/main`);
-            const prevSnap = await getDoc(prevMetaRef);
-            const inheritedSavings = prevSnap.exists() ? (prevSnap.data().savingsSoFar ?? 0) : 0;
-            const initial = { ...defaultMeta, savingsSoFar: inheritedSavings, ownerId: user.uid };
-            await setDoc(metaRef, initial);
-            setMeta({ ...defaultMeta, savingsSoFar: inheritedSavings });
-          } catch (err) {
-            console.error("Error al inicializar meta:", err);
-          }
-        }
+        console.log("❌ SNAP NO EXISTE - no se escriben defaults automáticamente");
+        setMeta(defaultMeta);
       } else {
         console.log("✅ SNAP EXISTE - cargando datos:", snap.data());
         const data = snap.data() as Partial<Meta>;

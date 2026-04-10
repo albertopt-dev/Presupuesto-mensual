@@ -469,6 +469,7 @@ export default function HomePage() {
   }
 
   async function addExpense() {
+    console.log("ADD EXPENSE INICIADO");
     if (!user) return;
     const person = getPerson(user.uid);
     if (!person) {
@@ -489,6 +490,7 @@ export default function HomePage() {
       return;
     }
 
+    console.log("VALIDACIONES OK, intentando addDoc");
     const BUDGET_ID = getBudgetId(user.uid);
     const colRef = collection(
       db,
@@ -506,11 +508,14 @@ export default function HomePage() {
         createdAt: serverTimestamp(),
         ownerId: user.uid,
       });
+      console.log("ADDOC OK, ejecutando reset");
       setConcept("");
       setAmount("");
       setDate(getCurrentDate());
+      console.log("RESET OK, ejecutando toast");
       toast.success("✅ Gasto añadido correctamente");
     } catch (err) {
+      console.log("CATCH EJECUTADO:", err);
       console.error("Error al añadir gasto:", err);
       toast.error("Error al guardar el gasto");
     }

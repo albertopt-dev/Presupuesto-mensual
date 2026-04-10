@@ -469,21 +469,25 @@ export default function HomePage() {
       `budgets/${BUDGET_ID}/months/${month}/transactions`
     );
 
-    await addDoc(colRef, {
-      type: "expense",
-      date,
-      category: category.trim().toLowerCase(),
-      concept: concept.trim().toLowerCase(),
-      amount: parseFloat(amount.replace(',', '.')),
-      person,
-      createdAt: serverTimestamp(),
-      ownerId: user.uid,
-    });
-
-    setConcept("");
-    setAmount("");
-    setDate(getCurrentDate());
-    toast.success("Gasto añadido correctamente");
+    try {
+      await addDoc(colRef, {
+        type: "expense",
+        date,
+        category: category.trim().toLowerCase(),
+        concept: concept.trim().toLowerCase(),
+        amount: parseFloat(amount.replace(',', '.')),
+        person,
+        createdAt: serverTimestamp(),
+        ownerId: user.uid,
+      });
+      setConcept("");
+      setAmount("");
+      setDate(getCurrentDate());
+      toast.success("✅ Gasto añadido correctamente");
+    } catch (err) {
+      console.error("Error al añadir gasto:", err);
+      toast.error("Error al guardar el gasto");
+    }
   }
 
   async function deleteExpense(id: string) {
@@ -563,23 +567,7 @@ export default function HomePage() {
               {/* Botón forzar actualización - separado a la derecha */}
               <div className="ml-auto flex flex-col items-center gap-1">
                 <button
-                  onClick={() => {
-                    if ('serviceWorker' in navigator) {
-                      navigator.serviceWorker.getRegistrations().then(registrations => {
-                        registrations.forEach(registration => {
-                          registration.unregister();
-                        });
-                      });
-                      caches.keys().then(names => {
-                        names.forEach(name => {
-                          caches.delete(name);
-                        });
-                      });
-                      setTimeout(() => {
-                        window.location.reload();
-                      }, 100);
-                    }
-                  }}
+                  onClick={() => window.location.reload()}
                   className="rounded-xl border border-orange-400/50 bg-orange-500/20 px-3 py-2 text-xs font-bold text-orange-200 hover:bg-orange-500/30 transition"
                   title="Forzar actualización de la app"
                 >

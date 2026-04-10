@@ -508,17 +508,16 @@ export default function HomePage() {
         createdAt: serverTimestamp(),
         ownerId: user.uid,
       });
-      console.log("ADDOC OK, ejecutando reset");
+      console.log("ADDOC RESUELTO");
       setTimeout(() => {
+        console.log("EJECUTANDO RESET Y TOAST");
         setConcept("");
         setAmount("");
         setDate(getCurrentDate());
-        console.log("RESET OK, ejecutando toast");
         toast.success("✅ Gasto añadido correctamente");
-      }, 0);
+      }, 100);
     } catch (err) {
-      console.log("CATCH EJECUTADO:", err);
-      console.error("Error al añadir gasto:", err);
+      console.error("CATCH EJECUTADO:", err);
       toast.error("Error al guardar el gasto");
     }
   }

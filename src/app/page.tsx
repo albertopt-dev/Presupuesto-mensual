@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import PersonPicker, { getPerson, loadNames } from "@/components/PersonPicker";
 import { db, auth } from "@/lib/firebase";
@@ -221,6 +221,7 @@ export default function HomePage() {
   const [category, setCategory] = useState("comida");
   const [concept, setConcept] = useState("");
   const [amount, setAmount] = useState<string>(""); // Cambiar a string vacío
+  const pendingAddRef = useRef(false);
 
   // Categorías personalizadas
   const [customCategories, setCustomCategories] = useState<string[]>([]);
@@ -359,7 +360,6 @@ export default function HomePage() {
     );
     const qy = query(colRef, orderBy("date", "asc"));
     const unsub = onSnapshot(qy, (snap) => {
-      console.log(`📊 Transacciones encontradas: ${snap.docs.length}`);
       const rows = snap.docs.map((d) => {
         const data = d.data() as Omit<Tx, "id">;
         return {
@@ -373,8 +373,14 @@ export default function HomePage() {
         } as Tx;
       });
       const expenses = rows.filter((r) => r.type === "expense");
-      console.log(`💸 Gastos filtrados: ${expenses.length}`, expenses);
       setTxs(expenses);
+      if (pendingAddRef.current) {
+        pendingAddRef.current = false;
+        setConcept("");
+        setAmount("");
+        setDate(getCurrentDate());
+        toast.success("✅ Gasto añadido correctamente");
+      }
     });
     return () => unsub();
   }, [month, user]);
@@ -468,8 +474,7 @@ export default function HomePage() {
     });
   }
 
-  async function addExpense() {
-    console.log("ADD EXPENSE INICIADO");
+  function addExpense() {
     if (!user) return;
     const person = getPerson(user.uid);
     if (!person) {
@@ -490,36 +495,27 @@ export default function HomePage() {
       return;
     }
 
-    console.log("VALIDACIONES OK, intentando addDoc");
     const BUDGET_ID = getBudgetId(user.uid);
     const colRef = collection(
       db,
       `budgets/${BUDGET_ID}/months/${month}/transactions`
     );
 
-    try {
-      await addDoc(colRef, {
-        type: "expense",
-        date,
-        category: category.trim().toLowerCase(),
-        concept: concept.trim().toLowerCase(),
-        amount: parseFloat(amount.replace(',', '.')),
-        person,
-        createdAt: serverTimestamp(),
-        ownerId: user.uid,
-      });
-      console.log("ADDOC RESUELTO");
-      setTimeout(() => {
-        console.log("EJECUTANDO RESET Y TOAST");
-        setConcept("");
-        setAmount("");
-        setDate(getCurrentDate());
-        toast.success("✅ Gasto añadido correctamente");
-      }, 100);
-    } catch (err) {
-      console.error("CATCH EJECUTADO:", err);
+    pendingAddRef.current = true;
+    addDoc(colRef, {
+      type: "expense",
+      date,
+      category: category.trim().toLowerCase(),
+      concept: concept.trim().toLowerCase(),
+      amount: parseFloat(amount.replace(',', '.')),
+      person,
+      createdAt: serverTimestamp(),
+      ownerId: user.uid,
+    }).catch((err) => {
+      pendingAddRef.current = false;
+      console.error("Error al añadir gasto:", err);
       toast.error("Error al guardar el gasto");
-    }
+    });
   }
 
   async function deleteExpense(id: string) {

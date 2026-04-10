@@ -1,4 +1,8 @@
 import withPWA from "next-pwa";
+import { createRequire } from "module";
+
+const require = createRequire(import.meta.url);
+const defaultCache = require("next-pwa/cache");
 
 const nextConfig = {
   reactStrictMode: true,
@@ -17,4 +21,19 @@ export default withPWA({
   register: true,
   skipWaiting: true,
   disable: process.env.NODE_ENV === "development",
+  runtimeCaching: [
+    {
+      urlPattern: /^https:\/\/firestore\.googleapis\.com\/.*/i,
+      handler: "NetworkOnly",
+    },
+    {
+      urlPattern: /^https:\/\/firebase\.googleapis\.com\/.*/i,
+      handler: "NetworkOnly",
+    },
+    {
+      urlPattern: /^https:\/\/identitytoolkit\.googleapis\.com\/.*/i,
+      handler: "NetworkOnly",
+    },
+    ...defaultCache,
+  ],
 })(nextConfig);

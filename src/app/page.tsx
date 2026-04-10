@@ -312,9 +312,19 @@ export default function HomePage() {
     const metaRef = doc(db, `budgets/${BUDGET_ID}/months/${month}/meta/main`);
     const unsub = onSnapshot(metaRef, async (snap) => {
       if (!snap.exists()) {
-        console.log('⚠️ No hay datos meta para este mes, creando defaults...');
         if (!snap.metadata.fromCache && navigator.onLine) {
           try {
+            // Verificar con getDoc independiente antes de sobrescribir,
+            // para evitar que una respuesta contaminada del SW destruya datos reales.
+            const verifySnap = await getDoc(metaRef);
+            if (verifySnap.exists()) {
+              // El documento existe — el onSnapshot recibió un falso negativo.
+              // Cargamos los datos reales sin tocar Firestore.
+              const data = verifySnap.data() as Partial<Meta>;
+              setMeta({ ...defaultMeta, ...data });
+              return;
+            }
+            // Confirmado por dos fuentes que no existe: crear defaults.
             const [y, m] = month.split("-").map(Number);
             const prevDate = new Date(y, m - 2);
             const prevMonth = `${prevDate.getFullYear()}-${String(prevDate.getMonth() + 1).padStart(2, "0")}`;
@@ -325,14 +335,11 @@ export default function HomePage() {
             await setDoc(metaRef, initial);
             setMeta({ ...defaultMeta, savingsSoFar: inheritedSavings });
           } catch (err) {
-            console.error("Error al inicializar meta (sin conexión o error de red):", err);
+            console.error("Error al inicializar meta:", err);
           }
-        } else {
-          console.log('⏸️ Cliente offline o snapshot desde caché — no se escriben defaults');
         }
       } else {
         const data = snap.data() as Partial<Meta>;
-        console.log('✅ Meta cargada:', data);
         setMeta({ ...defaultMeta, ...data });
       }
     });

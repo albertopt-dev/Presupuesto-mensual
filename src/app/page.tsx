@@ -199,6 +199,14 @@ export default function HomePage() {
 
   const [selectedCat, setSelectedCat] = useState<string | null>(null);
 
+  // Estados locales para inputs de meta — evitan escribir a Firestore en cada keystroke
+  const [localIncomeP1, setLocalIncomeP1] = useState<string>("");
+  const [localIncomeP2, setLocalIncomeP2] = useState<string>("");
+  const [localSavingTarget, setLocalSavingTarget] = useState<string>("");
+  const [localExtraSavings, setLocalExtraSavings] = useState<string>("");
+  const [localSavingsGoal, setLocalSavingsGoal] = useState<string>("");
+  const [localSavingsSoFar, setLocalSavingsSoFar] = useState<string>("");
+
   // Función para obtener fecha actual en formato YYYY-MM-DD
   const getCurrentDate = () => {
     const now = new Date();
@@ -329,6 +337,16 @@ export default function HomePage() {
     });
     return () => unsub();
   }, [month, user]);
+
+  // Sincronizar estados locales cuando meta cambia desde Firestore (o al cambiar de mes)
+  useEffect(() => {
+    setLocalIncomeP1(meta.incomeP1 ? String(meta.incomeP1) : "");
+    setLocalIncomeP2(meta.incomeP2 ? String(meta.incomeP2) : "");
+    setLocalSavingTarget(meta.savingTarget ? String(meta.savingTarget) : "");
+    setLocalExtraSavings(meta.extraSavings ? String(meta.extraSavings) : "");
+    setLocalSavingsGoal(meta.savingsGoal ? String(meta.savingsGoal) : "");
+    setLocalSavingsSoFar(meta.savingsSoFar ? String(meta.savingsSoFar) : "");
+  }, [meta]);
 
   // 2) Escuchar TRANSACCIONES en tiempo real
   useEffect(() => {
@@ -631,8 +649,12 @@ export default function HomePage() {
                     <div className="relative">
                       <input
                         type="number"
-                        value={meta.incomeP1}
-                        onChange={(e) => saveMeta({ ...meta, incomeP1: Number(e.target.value) })}
+                        value={localIncomeP1}
+                        onChange={(e) => setLocalIncomeP1(e.target.value)}
+                        onBlur={() => {
+                          const val = Number(localIncomeP1) || 0;
+                          if (val !== meta.incomeP1) saveMeta({ ...meta, incomeP1: val });
+                        }}
                         className="w-full rounded-xl bg-black/30 border border-white/10 px-4 py-3 text-white placeholder-white/50 outline-none focus:border-emerald-400/50 focus:bg-black/40 focus:ring-2 focus:ring-emerald-400/20 transition-all"
                         placeholder="Nómina..."
                       />
@@ -646,8 +668,12 @@ export default function HomePage() {
                     <div className="relative">
                       <input
                         type="number"
-                        value={meta.incomeP2}
-                        onChange={(e) => saveMeta({ ...meta, incomeP2: Number(e.target.value) })}
+                        value={localIncomeP2}
+                        onChange={(e) => setLocalIncomeP2(e.target.value)}
+                        onBlur={() => {
+                          const val = Number(localIncomeP2) || 0;
+                          if (val !== meta.incomeP2) saveMeta({ ...meta, incomeP2: val });
+                        }}
                         className="w-full rounded-xl bg-black/30 border border-white/10 px-4 py-3 text-white placeholder-white/50 outline-none focus:border-emerald-400/50 focus:bg-black/40 focus:ring-2 focus:ring-emerald-400/20 transition-all"
                         placeholder="Nómina..."
                       />
@@ -700,8 +726,12 @@ export default function HomePage() {
                       <div className="relative">
                         <input
                           type="number"
-                          value={meta.savingTarget}
-                          onChange={(e) => saveMeta({ ...meta, savingTarget: Number(e.target.value) })}
+                          value={localSavingTarget}
+                          onChange={(e) => setLocalSavingTarget(e.target.value)}
+                          onBlur={() => {
+                            const val = Number(localSavingTarget) || 0;
+                            if (val !== meta.savingTarget) saveMeta({ ...meta, savingTarget: val });
+                          }}
                           className="w-full rounded-xl bg-black/30 border border-white/10 px-3 py-3 text-white text-sm placeholder-white/50 outline-none focus:border-indigo-400/50 focus:bg-black/40 focus:ring-2 focus:ring-indigo-400/20 transition-all"
                           placeholder="500..."
                         />
@@ -714,8 +744,12 @@ export default function HomePage() {
                       <div className="relative">
                         <input
                           type="number"
-                          value={meta.extraSavings}
-                          onChange={(e) => saveMeta({ ...meta, extraSavings: Number(e.target.value) })}
+                          value={localExtraSavings}
+                          onChange={(e) => setLocalExtraSavings(e.target.value)}
+                          onBlur={() => {
+                            const val = Number(localExtraSavings) || 0;
+                            if (val !== meta.extraSavings) saveMeta({ ...meta, extraSavings: val });
+                          }}
                           className="w-full rounded-xl bg-black/30 border border-white/10 px-3 py-3 text-white text-sm placeholder-white/50 outline-none focus:border-purple-400/50 focus:bg-black/40 focus:ring-2 focus:ring-purple-400/20 transition-all"
                           placeholder="0..."
                         />
@@ -729,8 +763,12 @@ export default function HomePage() {
                     <div className="relative">
                       <input
                         type="number"
-                        value={meta.savingsGoal}
-                        onChange={(e) => saveMeta({ ...meta, savingsGoal: Number(e.target.value) })}
+                        value={localSavingsGoal}
+                        onChange={(e) => setLocalSavingsGoal(e.target.value)}
+                        onBlur={() => {
+                          const val = Number(localSavingsGoal) || 0;
+                          if (val !== meta.savingsGoal) saveMeta({ ...meta, savingsGoal: val });
+                        }}
                         className="w-full rounded-xl bg-black/30 border border-white/10 px-4 py-3 text-white placeholder-white/50 outline-none focus:border-indigo-400/50 focus:bg-black/40 focus:ring-2 focus:ring-indigo-400/20 transition-all"
                         placeholder="Meta mensual..."
                       />
@@ -819,8 +857,12 @@ export default function HomePage() {
                 <div className="relative">
                   <input
                     type="number"
-                    value={meta.savingsSoFar}
-                    onChange={(e) => saveMeta({ ...meta, savingsSoFar: Number(e.target.value) })}
+                    value={localSavingsSoFar}
+                    onChange={(e) => setLocalSavingsSoFar(e.target.value)}
+                    onBlur={() => {
+                      const val = Number(localSavingsSoFar) || 0;
+                      if (val !== meta.savingsSoFar) saveMeta({ ...meta, savingsSoFar: val });
+                    }}
                     className="w-full rounded-xl bg-black/30 border border-white/10 px-4 py-3 text-white placeholder-white/50 outline-none focus:border-amber-400/50 focus:bg-black/40 focus:ring-2 focus:ring-amber-400/20 transition-all"
                     placeholder="Total en tu cuenta/hucha..."
                   />

@@ -308,69 +308,27 @@ export default function HomePage() {
   }, [user]);
   useEffect(() => {
     if (!user) return;
-
     const BUDGET_ID = getBudgetId(user.uid);
+    console.log('🔥 Firebase path:', `budgets/${BUDGET_ID}/months/${month}/meta/main`);
     const metaRef = doc(db, `budgets/${BUDGET_ID}/months/${month}/meta/main`);
-
-    console.log("🔥 Firebase path:", `budgets/${BUDGET_ID}/months/${month}/meta/main`);
-
-    let unsub: (() => void) | undefined;
-    let cancelled = false;
-
-    const start = async () => {
-      try {
-        console.log("🔎 GETDOC META inicial...");
-        const firstSnap = await getDoc(metaRef);
-
-        if (cancelled) return;
-
-        console.log("🔎 GETDOC META resultado:", {
-          exists: firstSnap.exists(),
-          data: firstSnap.exists() ? firstSnap.data() : null,
-        });
-
-        if (firstSnap.exists()) {
-          const data = firstSnap.data() as Partial<Meta>;
-          setMeta({ ...defaultMeta, ...data });
-        } else {
-          setMeta(defaultMeta);
-        }
-
-        unsub = onSnapshot(
-          metaRef,
-          (snap) => {
-            console.log("📸 SNAPSHOT META:", {
-              exists: snap.exists(),
-              fromCache: snap.metadata.fromCache,
-              hasPendingWrites: snap.metadata.hasPendingWrites,
-              data: snap.exists() ? snap.data() : null,
-              onlineStatus: navigator.onLine,
-            });
-
-            if (snap.exists()) {
-              console.log("✅ SNAP EXISTE - cargando datos:", snap.data());
-              const data = snap.data() as Partial<Meta>;
-              setMeta({ ...defaultMeta, ...data });
-            } else {
-              console.log("❌ SNAP NO EXISTE - no se escriben defaults automáticamente");
-              setMeta(defaultMeta);
-            }
-          },
-          (error) => {
-            console.error("❌ ERROR onSnapshot META:", error);
-          }
-        );
-      } catch (error) {
-        console.error("❌ ERROR getDoc META inicial:", error);
+    const unsub = onSnapshot(metaRef, async (snap) => {
+      console.log("📸 SNAPSHOT META:", {
+        exists: snap.exists(),
+        fromCache: snap.metadata.fromCache,
+        hasPendingWrites: snap.metadata.hasPendingWrites,
+        data: snap.exists() ? snap.data() : null,
+        onlineStatus: navigator.onLine
+      });
+      if (!snap.exists()) {
+        console.log("❌ SNAP NO EXISTE - no se escriben defaults automáticamente");
+        setMeta(defaultMeta);
+      } else {
+        console.log("✅ SNAP EXISTE - cargando datos:", snap.data());
+        const data = snap.data() as Partial<Meta>;
+        setMeta({ ...defaultMeta, ...data });
       }
-    };
-
-    start();
-
-    return () => {
-      cancelled = true;
-      if (unsub) unsub();
-    };
+    });
+    return () => unsub();
   }, [month, user]);
 
   // Sincronizar estados locales cuando meta cambia desde Firestore (o al cambiar de mes)

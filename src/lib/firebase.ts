@@ -1,5 +1,5 @@
 import { initializeApp, getApps } from "firebase/app";
-import { initializeFirestore, memoryLocalCache } from "firebase/firestore";
+import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 
 const firebaseConfig = {
@@ -13,9 +13,5 @@ const firebaseConfig = {
 
 const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
 
-export const db = initializeFirestore(app, {
-  localCache: memoryLocalCache(),
-  experimentalAutoDetectLongPolling: true,
-});
-
+export const db = getFirestore(app);
 export const auth = getAuth(app);

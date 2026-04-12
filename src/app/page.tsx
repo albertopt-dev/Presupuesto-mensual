@@ -17,8 +17,6 @@ import {
   orderBy,
   serverTimestamp,
   deleteDoc,
-  getDoc,
-  enableNetwork,
 } from "firebase/firestore";
 
 import {
@@ -177,6 +175,53 @@ const CATEGORY_OPTIONS = [
   "compras",
   "cuidado personal",
 ];
+
+function readNumberField(
+  fields: Record<string, { integerValue?: string; doubleValue?: number | string }> | undefined,
+  key: keyof Meta
+): number {
+  const value = fields?.[key];
+  if (!value) return 0;
+
+  if (value.integerValue != null) return Number(value.integerValue) || 0;
+  if (value.doubleValue != null) return Number(value.doubleValue) || 0;
+
+  return 0;
+}
+
+async function fetchMetaFromServer(uid: string, month: string, idToken: string): Promise<Partial<Meta> | null> {
+  const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
+  const url =
+    `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/` +
+    `budgets/${uid}/months/${month}/meta/main`;
+
+  const res = await fetch(url, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${idToken}`,
+    },
+    cache: "no-store",
+  });
+
+  if (res.status === 404) return null;
+  if (!res.ok) {
+    throw new Error(`REST meta fetch failed: ${res.status}`);
+  }
+
+  const json = await res.json();
+  const fields = json?.fields as
+    | Record<string, { integerValue?: string; doubleValue?: number | string }>
+    | undefined;
+
+  return {
+    incomeP1: readNumberField(fields, "incomeP1"),
+    incomeP2: readNumberField(fields, "incomeP2"),
+    savingTarget: readNumberField(fields, "savingTarget"),
+    savingsSoFar: readNumberField(fields, "savingsSoFar"),
+    savingsGoal: readNumberField(fields, "savingsGoal"),
+    extraSavings: readNumberField(fields, "extraSavings"),
+  };
+}
 
 export default function HomePage() {
   const [meta, setMeta] = useState<Meta>(defaultMeta);
@@ -349,7 +394,6 @@ export default function HomePage() {
     console.log("🔥 Firebase path:", `budgets/${BUDGET_ID}/months/${month}/meta/main`);
 
     let cancelled = false;
-    let firstSnapshotReceived = false;
     let unsub: (() => void) | undefined;
 
     const applyMeta = (data: Partial<Meta> | null) => {
@@ -372,10 +416,16 @@ export default function HomePage() {
 
     const start = async () => {
       try {
-        await enableNetwork(db);
-        console.log("🌐 Firestore network enabled");
+        const idToken = await user.getIdToken();
+        const initialMeta = await fetchMetaFromServer(user.uid, month, idToken);
+
+        if (cancelled) return;
+
+        console.log("🌐 REST initial meta:", initialMeta);
+        applyMeta(initialMeta);
       } catch (error) {
-        console.error("❌ ERROR enableNetwork:", error);
+        console.error("❌ ERROR REST initial meta:", error);
+        if (!cancelled) setMetaLoaded(true);
       }
 
       if (cancelled) return;
@@ -384,8 +434,6 @@ export default function HomePage() {
         metaRef,
         { includeMetadataChanges: true },
         (snap) => {
-          firstSnapshotReceived = true;
-
           console.log("📸 SNAPSHOT META:", {
             exists: snap.exists(),
             fromCache: snap.metadata.fromCache,
@@ -396,48 +444,22 @@ export default function HomePage() {
 
           if (!snap.exists()) {
             if (snap.metadata.fromCache) {
-              console.log("🟡 SNAP vacío desde caché; mantengo meta actual");
+              console.log("🟡 SNAP vacío desde caché; ignoro");
               return;
             }
 
             console.log("❌ SNAP NO EXISTE confirmado");
             applyMeta(null);
-          } else {
-            console.log("✅ SNAP EXISTE - cargando datos:", snap.data());
-            applyMeta(snap.data() as Partial<Meta>);
+            return;
           }
+
+          console.log("✅ SNAP EXISTE - cargando datos:", snap.data());
+          applyMeta(snap.data() as Partial<Meta>);
         },
         (error) => {
           console.error("❌ ERROR onSnapshot META:", error);
         }
       );
-
-      window.setTimeout(async () => {
-        if (cancelled || firstSnapshotReceived) return;
-
-        console.warn("⏳ onSnapshot META no respondió; usando getDoc de respaldo");
-
-        try {
-          await enableNetwork(db);
-          const snap = await getDoc(metaRef);
-
-          if (cancelled || firstSnapshotReceived) return;
-
-          console.log("🆘 GETDOC META fallback:", {
-            exists: snap.exists(),
-            data: snap.exists() ? snap.data() : null,
-          });
-
-          if (!snap.exists()) {
-            console.log("🟡 GETDOC fallback no encontró documento; mantengo meta actual");
-            return;
-          } else {
-            applyMeta(snap.data() as Partial<Meta>);
-          }
-        } catch (error) {
-          console.error("❌ ERROR getDoc META fallback:", error);
-        }
-      }, 1500);
     };
 
     start();

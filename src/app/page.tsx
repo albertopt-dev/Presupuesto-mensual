@@ -17,6 +17,7 @@ import {
   orderBy,
   serverTimestamp,
   deleteDoc,
+  getDoc,
 } from "firebase/firestore";
 
 import {
@@ -318,30 +319,88 @@ export default function HomePage() {
         user === undefined ? "undefined" : user ? "authenticated" : "null",
       uid: user?.uid ?? null,
     });
-    
+
     if (user === undefined) return;
-    if (!user) return;
+
+    if (!user) {
+      setMeta(defaultMeta);
+      return;
+    }
+
     const BUDGET_ID = getBudgetId(user.uid);
-    console.log('🔥 Firebase path:', `budgets/${BUDGET_ID}/months/${month}/meta/main`);
     const metaRef = doc(db, `budgets/${BUDGET_ID}/months/${month}/meta/main`);
-    const unsub = onSnapshot(metaRef, async (snap) => {
-      console.log("📸 SNAPSHOT META:", {
-        exists: snap.exists(),
-        fromCache: snap.metadata.fromCache,
-        hasPendingWrites: snap.metadata.hasPendingWrites,
-        data: snap.exists() ? snap.data() : null,
-        onlineStatus: navigator.onLine
-      });
-      if (!snap.exists()) {
-        console.log("❌ SNAP NO EXISTE - no se escriben defaults automáticamente");
+
+    console.log("🔥 Firebase path:", `budgets/${BUDGET_ID}/months/${month}/meta/main`);
+
+    let cancelled = false;
+    let firstSnapshotReceived = false;
+
+    const applyMeta = (data: Partial<Meta> | null) => {
+      if (cancelled) return;
+      if (!data) {
         setMeta(defaultMeta);
-      } else {
-        console.log("✅ SNAP EXISTE - cargando datos:", snap.data());
-        const data = snap.data() as Partial<Meta>;
-        setMeta({ ...defaultMeta, ...data });
+        return;
       }
-    });
-    return () => unsub();
+      setMeta({ ...defaultMeta, ...data });
+    };
+
+    const unsub = onSnapshot(
+      metaRef,
+      { includeMetadataChanges: true },
+      (snap) => {
+        firstSnapshotReceived = true;
+
+        console.log("📸 SNAPSHOT META:", {
+          exists: snap.exists(),
+          fromCache: snap.metadata.fromCache,
+          hasPendingWrites: snap.metadata.hasPendingWrites,
+          data: snap.exists() ? snap.data() : null,
+          onlineStatus: navigator.onLine,
+        });
+
+        if (!snap.exists()) {
+          console.log("❌ SNAP NO EXISTE - no se escriben defaults automáticamente");
+          applyMeta(null);
+        } else {
+          console.log("✅ SNAP EXISTE - cargando datos:", snap.data());
+          applyMeta(snap.data() as Partial<Meta>);
+        }
+      },
+      (error) => {
+        console.error("❌ ERROR onSnapshot META:", error);
+      }
+    );
+
+    const fallbackTimer = window.setTimeout(async () => {
+      if (cancelled || firstSnapshotReceived) return;
+
+      console.warn("⏳ onSnapshot META no respondió; usando getDoc de respaldo");
+
+      try {
+        const snap = await getDoc(metaRef);
+
+        if (cancelled || firstSnapshotReceived) return;
+
+        console.log("🆘 GETDOC META fallback:", {
+          exists: snap.exists(),
+          data: snap.exists() ? snap.data() : null,
+        });
+
+        if (!snap.exists()) {
+          applyMeta(null);
+        } else {
+          applyMeta(snap.data() as Partial<Meta>);
+        }
+      } catch (error) {
+        console.error("❌ ERROR getDoc META fallback:", error);
+      }
+    }, 1500);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(fallbackTimer);
+      unsub();
+    };
   }, [month, user]);
 
   // Sincronizar estados locales cuando meta cambia desde Firestore (o al cambiar de mes)

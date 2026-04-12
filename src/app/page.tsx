@@ -9,12 +9,9 @@ import { signOut } from "firebase/auth";
 import { useAuthUser } from "@/lib/auth-context";
 import {
   doc,
-  onSnapshot,
   setDoc,
   collection,
   addDoc,
-  query,
-  orderBy,
   serverTimestamp,
   deleteDoc,
 } from "firebase/firestore";
@@ -176,6 +173,40 @@ const CATEGORY_OPTIONS = [
   "cuidado personal",
 ];
 
+async function fetchBootstrapMonth(uid: string, month: string) {
+  const res = await fetch(
+    `/api/bootstrap-month?uid=${encodeURIComponent(uid)}&month=${encodeURIComponent(month)}`,
+    {
+      method: "GET",
+      cache: "no-store",
+    }
+  );
+
+  if (!res.ok) {
+    throw new Error(`bootstrap-month failed: ${res.status}`);
+  }
+
+  return res.json() as Promise<{
+    meta: {
+      incomeP1: number;
+      incomeP2: number;
+      savingTarget: number;
+      savingsSoFar: number;
+      savingsGoal: number;
+      extraSavings: number;
+    };
+    transactions: Array<{
+      id: string;
+      date: string;
+      category: string;
+      concept: string;
+      amount: number;
+      person: Person;
+      type: "expense";
+    }>;
+  }>;
+}
+
 export default function HomePage() {
   const [meta, setMeta] = useState<Meta>(defaultMeta);
   const [metaLoaded, setMetaLoaded] = useState(false);
@@ -324,7 +355,7 @@ export default function HomePage() {
     } catch {}
   }, [user]);
   useEffect(() => {
-    console.log("📡 useEffect META start:", {
+    console.log("📡 useEffect BOOTSTRAP start:", {
       month,
       userState:
         user === undefined ? "undefined" : user ? "authenticated" : "null",
@@ -335,71 +366,38 @@ export default function HomePage() {
 
     if (!user) {
       setMeta(defaultMeta);
+      setTxs([]);
       setMetaLoaded(false);
       return;
     }
 
+    let cancelled = false;
     setMetaLoaded(false);
 
-    const BUDGET_ID = getBudgetId(user.uid);
-    const metaRef = doc(db, `budgets/${BUDGET_ID}/months/${month}/meta/main`);
+    const start = async () => {
+      try {
+        const data = await fetchBootstrapMonth(user.uid, month);
 
-    console.log("🔥 Firebase path:", `budgets/${BUDGET_ID}/months/${month}/meta/main`);
+        if (cancelled) return;
 
-    let cancelled = false;
+        console.log("🌐 bootstrap-month response:", data);
 
-    const applyMeta = (data: Partial<Meta> | null) => {
-      if (cancelled) return;
-
-      console.log("🧠 applyMeta input:", data);
-
-      if (!data) {
-        console.log("🧠 applyMeta -> defaultMeta");
-        setMeta(defaultMeta);
+        setMeta({ ...defaultMeta, ...data.meta });
+        setTxs(data.transactions);
         setMetaLoaded(true);
-        return;
+      } catch (error) {
+        console.error("❌ ERROR bootstrap-month:", error);
+        if (cancelled) return;
+        setMeta(defaultMeta);
+        setTxs([]);
+        setMetaLoaded(true);
       }
-
-      const nextMeta = { ...defaultMeta, ...data };
-      console.log("🧠 applyMeta -> nextMeta:", nextMeta);
-      setMeta(nextMeta);
-      setMetaLoaded(true);
     };
 
-    const unsub = onSnapshot(
-      metaRef,
-      { includeMetadataChanges: true },
-      (snap) => {
-        console.log("📸 SNAPSHOT META:", {
-          exists: snap.exists(),
-          fromCache: snap.metadata.fromCache,
-          hasPendingWrites: snap.metadata.hasPendingWrites,
-          data: snap.exists() ? snap.data() : null,
-          onlineStatus: navigator.onLine,
-        });
-
-        if (!snap.exists()) {
-          if (snap.metadata.fromCache) {
-            console.log("🟡 SNAP vacío desde caché; ignoro");
-            return;
-          }
-
-          console.log("❌ SNAP NO EXISTE confirmado");
-          applyMeta(null);
-          return;
-        }
-
-        console.log("✅ SNAP EXISTE - cargando datos:", snap.data());
-        applyMeta(snap.data() as Partial<Meta>);
-      },
-      (error) => {
-        console.error("❌ ERROR onSnapshot META:", error);
-      }
-    );
+    start();
 
     return () => {
       cancelled = true;
-      unsub();
     };
   }, [month, user]);
 
@@ -420,42 +418,6 @@ export default function HomePage() {
     setLocalSavingsSoFar(meta.savingsSoFar == null ? "" : String(meta.savingsSoFar));
   }, [meta, metaLoaded]);
 
-  // 2) Escuchar TRANSACCIONES en tiempo real
-  useEffect(() => {
-    if (user === undefined) return;
-    if (!user) return;
-    const BUDGET_ID = getBudgetId(user.uid);
-    console.log('🔥 Firebase transactions path:', `budgets/${BUDGET_ID}/months/${month}/transactions`);
-    const colRef = collection(
-      db,
-      `budgets/${BUDGET_ID}/months/${month}/transactions`
-    );
-    const qy = query(colRef, orderBy("date", "asc"));
-    const unsub = onSnapshot(qy, (snap) => {
-      const rows = snap.docs.map((d) => {
-        const data = d.data() as Omit<Tx, "id">;
-        return {
-          id: d.id,
-          date: data.date,
-          category: data.category,
-          concept: data.concept,
-          amount: data.amount,
-          person: data.person,
-          type: data.type,
-        } as Tx;
-      });
-      const expenses = rows.filter((r) => r.type === "expense");
-      setTxs(expenses);
-      if (pendingAddRef.current) {
-        pendingAddRef.current = false;
-        setConcept("");
-        setAmount("");
-        setDate(getCurrentDate());
-        toast.success("✅ Gasto añadido correctamente");
-      }
-    });
-    return () => unsub();
-  }, [month, user]);
 
   const totals = useMemo(() => {
     const incomeP1 = Number(meta.incomeP1) || 0;

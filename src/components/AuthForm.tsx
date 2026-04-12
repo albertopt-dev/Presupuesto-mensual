@@ -100,28 +100,33 @@ export default function AuthForm({ onAuth }: { onAuth: () => void }) {
     e.preventDefault();
     setLoading(true);
     setError("");
-    try {
-      if (isRegister) {
+    if (isRegister) {
+      try {
         await createUserWithEmailAndPassword(auth, email, password);
-      } else {
+        onAuth();
+      } catch (err: unknown) {
+        const code = (err as { code?: string })?.code ?? "";
+        const messages: Record<string, string> = {
+          "auth/email-already-in-use": "Este email ya está registrado",
+          "auth/weak-password": "La contraseña debe tener al menos 6 caracteres",
+          "auth/invalid-email": "El formato del email no es válido",
+        };
+        setError(messages[code] ?? "Ha ocurrido un error. Inténtalo de nuevo");
+      }
+    } else {
+      try {
         await setPersistence(auth, rememberMe ? browserLocalPersistence : browserSessionPersistence);
         await signInWithEmailAndPassword(auth, email, password);
+        onAuth();
+      } catch (err: unknown) {
+        const code = (err as { code?: string })?.code ?? "";
+        const messages: Record<string, string> = {
+          "auth/invalid-credential": "Email o contraseña incorrectos",
+        };
+        setError(messages[code] ?? "Ha ocurrido un error. Inténtalo de nuevo");
       }
-      onAuth();
-    } catch (err: unknown) {
-      const code = (err as { code?: string })?.code ?? "";
-      const messages: Record<string, string> = {
-        "auth/invalid-credential": "Email o contraseña incorrectos",
-        "auth/user-not-found": "No existe ninguna cuenta con este email",
-        "auth/wrong-password": "Contraseña incorrecta",
-        "auth/email-already-in-use": "Este email ya está registrado",
-        "auth/weak-password": "La contraseña debe tener al menos 6 caracteres",
-        "auth/invalid-email": "El formato del email no es válido",
-      };
-      setError(messages[code] ?? "Ha ocurrido un error. Inténtalo de nuevo");
-    } finally {
-      setLoading(false);
     }
+    setLoading(false);
   };
 
   return (

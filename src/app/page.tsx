@@ -176,53 +176,6 @@ const CATEGORY_OPTIONS = [
   "cuidado personal",
 ];
 
-function readNumberField(
-  fields: Record<string, { integerValue?: string; doubleValue?: number | string }> | undefined,
-  key: keyof Meta
-): number {
-  const value = fields?.[key];
-  if (!value) return 0;
-
-  if (value.integerValue != null) return Number(value.integerValue) || 0;
-  if (value.doubleValue != null) return Number(value.doubleValue) || 0;
-
-  return 0;
-}
-
-async function fetchMetaFromServer(uid: string, month: string, idToken: string): Promise<Partial<Meta> | null> {
-  const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
-  const url =
-    `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/` +
-    `budgets/${uid}/months/${month}/meta/main`;
-
-  const res = await fetch(url, {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${idToken}`,
-    },
-    cache: "no-store",
-  });
-
-  if (res.status === 404) return null;
-  if (!res.ok) {
-    throw new Error(`REST meta fetch failed: ${res.status}`);
-  }
-
-  const json = await res.json();
-  const fields = json?.fields as
-    | Record<string, { integerValue?: string; doubleValue?: number | string }>
-    | undefined;
-
-  return {
-    incomeP1: readNumberField(fields, "incomeP1"),
-    incomeP2: readNumberField(fields, "incomeP2"),
-    savingTarget: readNumberField(fields, "savingTarget"),
-    savingsSoFar: readNumberField(fields, "savingsSoFar"),
-    savingsGoal: readNumberField(fields, "savingsGoal"),
-    extraSavings: readNumberField(fields, "extraSavings"),
-  };
-}
-
 export default function HomePage() {
   const [meta, setMeta] = useState<Meta>(defaultMeta);
   const [metaLoaded, setMetaLoaded] = useState(false);
@@ -394,7 +347,6 @@ export default function HomePage() {
     console.log("🔥 Firebase path:", `budgets/${BUDGET_ID}/months/${month}/meta/main`);
 
     let cancelled = false;
-    let unsub: (() => void) | undefined;
 
     const applyMeta = (data: Partial<Meta> | null) => {
       if (cancelled) return;
@@ -414,59 +366,40 @@ export default function HomePage() {
       setMetaLoaded(true);
     };
 
-    const start = async () => {
-      try {
-        const idToken = await user.getIdToken();
-        const initialMeta = await fetchMetaFromServer(user.uid, month, idToken);
+    const unsub = onSnapshot(
+      metaRef,
+      { includeMetadataChanges: true },
+      (snap) => {
+        console.log("📸 SNAPSHOT META:", {
+          exists: snap.exists(),
+          fromCache: snap.metadata.fromCache,
+          hasPendingWrites: snap.metadata.hasPendingWrites,
+          data: snap.exists() ? snap.data() : null,
+          onlineStatus: navigator.onLine,
+        });
 
-        if (cancelled) return;
-
-        console.log("🌐 REST initial meta:", initialMeta);
-        applyMeta(initialMeta);
-      } catch (error) {
-        console.error("❌ ERROR REST initial meta:", error);
-        if (!cancelled) setMetaLoaded(true);
-      }
-
-      if (cancelled) return;
-
-      unsub = onSnapshot(
-        metaRef,
-        { includeMetadataChanges: true },
-        (snap) => {
-          console.log("📸 SNAPSHOT META:", {
-            exists: snap.exists(),
-            fromCache: snap.metadata.fromCache,
-            hasPendingWrites: snap.metadata.hasPendingWrites,
-            data: snap.exists() ? snap.data() : null,
-            onlineStatus: navigator.onLine,
-          });
-
-          if (!snap.exists()) {
-            if (snap.metadata.fromCache) {
-              console.log("🟡 SNAP vacío desde caché; ignoro");
-              return;
-            }
-
-            console.log("❌ SNAP NO EXISTE confirmado");
-            applyMeta(null);
+        if (!snap.exists()) {
+          if (snap.metadata.fromCache) {
+            console.log("🟡 SNAP vacío desde caché; ignoro");
             return;
           }
 
-          console.log("✅ SNAP EXISTE - cargando datos:", snap.data());
-          applyMeta(snap.data() as Partial<Meta>);
-        },
-        (error) => {
-          console.error("❌ ERROR onSnapshot META:", error);
+          console.log("❌ SNAP NO EXISTE confirmado");
+          applyMeta(null);
+          return;
         }
-      );
-    };
 
-    start();
+        console.log("✅ SNAP EXISTE - cargando datos:", snap.data());
+        applyMeta(snap.data() as Partial<Meta>);
+      },
+      (error) => {
+        console.error("❌ ERROR onSnapshot META:", error);
+      }
+    );
 
     return () => {
       cancelled = true;
-      if (unsub) unsub();
+      unsub();
     };
   }, [month, user]);
 

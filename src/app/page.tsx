@@ -209,6 +209,16 @@ export default function HomePage() {
   const [localSavingsGoal, setLocalSavingsGoal] = useState<string>("");
   const [localSavingsSoFar, setLocalSavingsSoFar] = useState<string>("");
 
+  console.log("🪞 render meta/local:", {
+    meta,
+    localIncomeP1,
+    localIncomeP2,
+    localSavingTarget,
+    localExtraSavings,
+    localSavingsGoal,
+    localSavingsSoFar,
+  });
+
   // Función para obtener fecha actual en formato YYYY-MM-DD
   const getCurrentDate = () => {
     const now = new Date();
@@ -339,11 +349,18 @@ export default function HomePage() {
 
     const applyMeta = (data: Partial<Meta> | null) => {
       if (cancelled) return;
+
+      console.log("🧠 applyMeta input:", data);
+
       if (!data) {
+        console.log("🧠 applyMeta -> defaultMeta");
         setMeta(defaultMeta);
         return;
       }
-      setMeta({ ...defaultMeta, ...data });
+
+      const nextMeta = { ...defaultMeta, ...data };
+      console.log("🧠 applyMeta -> nextMeta:", nextMeta);
+      setMeta(nextMeta);
     };
 
     const start = async () => {
@@ -426,12 +443,14 @@ export default function HomePage() {
 
   // Sincronizar estados locales cuando meta cambia desde Firestore (o al cambiar de mes)
   useEffect(() => {
-    setLocalIncomeP1(meta.incomeP1 ? String(meta.incomeP1) : "");
-    setLocalIncomeP2(meta.incomeP2 ? String(meta.incomeP2) : "");
-    setLocalSavingTarget(meta.savingTarget ? String(meta.savingTarget) : "");
-    setLocalExtraSavings(meta.extraSavings ? String(meta.extraSavings) : "");
-    setLocalSavingsGoal(meta.savingsGoal ? String(meta.savingsGoal) : "");
-    setLocalSavingsSoFar(meta.savingsSoFar ? String(meta.savingsSoFar) : "");
+    console.log("🔁 sync locals from meta:", meta);
+
+    setLocalIncomeP1(meta.incomeP1 == null ? "" : String(meta.incomeP1));
+    setLocalIncomeP2(meta.incomeP2 == null ? "" : String(meta.incomeP2));
+    setLocalSavingTarget(meta.savingTarget == null ? "" : String(meta.savingTarget));
+    setLocalExtraSavings(meta.extraSavings == null ? "" : String(meta.extraSavings));
+    setLocalSavingsGoal(meta.savingsGoal == null ? "" : String(meta.savingsGoal));
+    setLocalSavingsSoFar(meta.savingsSoFar == null ? "" : String(meta.savingsSoFar));
   }, [meta]);
 
   // 2) Escuchar TRANSACCIONES en tiempo real

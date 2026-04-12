@@ -290,6 +290,7 @@ export default function HomePage() {
   // 1) Escuchar META en tiempo real
   const user = useCurrentUser();
   useEffect(() => {
+    if (user === undefined) return;
     if (!user) return;
     setNames(loadNames(user.uid));
     try {
@@ -306,6 +307,7 @@ export default function HomePage() {
     } catch {}
   }, [user]);
   useEffect(() => {
+    if (user === undefined) return;
     if (!user) return;
     const BUDGET_ID = getBudgetId(user.uid);
     console.log('🔥 Firebase path:', `budgets/${BUDGET_ID}/months/${month}/meta/main`);
@@ -342,6 +344,7 @@ export default function HomePage() {
 
   // 2) Escuchar TRANSACCIONES en tiempo real
   useEffect(() => {
+    if (user === undefined) return;
     if (!user) return;
     const BUDGET_ID = getBudgetId(user.uid);
     console.log('🔥 Firebase transactions path:', `budgets/${BUDGET_ID}/months/${month}/transactions`);

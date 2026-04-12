@@ -641,12 +641,11 @@ export default function HomePage() {
               <div className="flex flex-col items-center gap-1">
                 <button
                   onClick={() => signOut(auth)}
-                  className="rounded-xl border border-red-400/50 bg-red-500/20 px-3 py-2 text-xs font-bold text-red-200 hover:bg-red-500/30 transition"
+                  className="rounded-xl border border-white bg-red-500/20 px-3 py-2 text-xs font-bold text-red-500 hover:bg-red-500/50 transition"
                   title="Cerrar sesión"
                 >
                   <LogOut size={16} className="text-red-400" />
                 </button>
-                <span className="text-xs text-white/60 hidden sm:block">Salir</span>
               </div>
             </div>
           </div>

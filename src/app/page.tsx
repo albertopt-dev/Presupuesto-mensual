@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import PersonPicker, { getPerson, loadNames } from "@/components/PersonPicker";
 import { db, auth } from "@/lib/firebase";
 import { signOut } from "firebase/auth";
-import { useCurrentUser } from "@/lib/useCurrentUser";
+import { useAuthUser } from "@/lib/auth-context";
 import {
   doc,
   onSnapshot,
@@ -288,7 +288,7 @@ export default function HomePage() {
   }
 
   // 1) Escuchar META en tiempo real
-  const user = useCurrentUser();
+  const user = useAuthUser();
   useEffect(() => {
     if (user === undefined) return;
     if (!user) return;

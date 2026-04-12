@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { auth } from "@/lib/firebase";
-import { onAuthStateChanged, User } from "firebase/auth";
+import { onAuthStateChanged, type User } from "firebase/auth";
 import AuthForm from "@/components/AuthForm";
+import { AuthUserProvider } from "@/lib/auth-context";
 
 export default function AuthGate({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null | undefined>(undefined);
@@ -17,5 +18,6 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
 
   if (user === undefined) return <div style={{ padding: 16 }}>Cargando…</div>;
   if (!user) return <AuthForm onAuth={() => {}} />;
-  return <>{children}</>;
+
+  return <AuthUserProvider user={user}>{children}</AuthUserProvider>;
 }

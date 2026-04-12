@@ -371,7 +371,12 @@ export default function HomePage() {
           });
 
           if (!snap.exists()) {
-            console.log("❌ SNAP NO EXISTE - no se escriben defaults automáticamente");
+            if (snap.metadata.fromCache) {
+              console.log("🟡 SNAP vacío desde caché; mantengo meta actual");
+              return;
+            }
+
+            console.log("❌ SNAP NO EXISTE confirmado");
             applyMeta(null);
           } else {
             console.log("✅ SNAP EXISTE - cargando datos:", snap.data());
@@ -400,7 +405,8 @@ export default function HomePage() {
           });
 
           if (!snap.exists()) {
-            applyMeta(null);
+            console.log("🟡 GETDOC fallback no encontró documento; mantengo meta actual");
+            return;
           } else {
             applyMeta(snap.data() as Partial<Meta>);
           }

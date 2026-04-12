@@ -109,11 +109,16 @@ export default function AuthForm({ onAuth }: { onAuth: () => void }) {
       }
       onAuth();
     } catch (err: unknown) {
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError("Error desconocido");
-      }
+      const code = (err as { code?: string })?.code ?? "";
+      const messages: Record<string, string> = {
+        "auth/invalid-credential": "Email o contraseña incorrectos",
+        "auth/user-not-found": "No existe ninguna cuenta con este email",
+        "auth/wrong-password": "Contraseña incorrecta",
+        "auth/email-already-in-use": "Este email ya está registrado",
+        "auth/weak-password": "La contraseña debe tener al menos 6 caracteres",
+        "auth/invalid-email": "El formato del email no es válido",
+      };
+      setError(messages[code] ?? "Ha ocurrido un error. Inténtalo de nuevo");
     } finally {
       setLoading(false);
     }

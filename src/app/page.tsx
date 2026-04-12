@@ -626,7 +626,7 @@ export default function HomePage() {
                 </span>
               </div>
               
-              {/* Botón forzar actualización - separado a la derecha */}
+              {/* BOTÓN ACTUALIZAR - comentado temporalmente, descomentar si se necesita
               <div className="ml-auto flex flex-col items-center gap-1">
                 <button
                   onClick={() => window.location.reload()}
@@ -637,6 +637,7 @@ export default function HomePage() {
                 </button>
                 <span className="text-xs text-white/60 hidden sm:block">Actualizar</span>
               </div>
+              */}
               <div className="flex flex-col items-center gap-1">
                 <button
                   onClick={() => signOut(auth)}

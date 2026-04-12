@@ -18,6 +18,7 @@ import {
   serverTimestamp,
   deleteDoc,
   getDoc,
+  enableNetwork,
 } from "firebase/firestore";
 
 import {
@@ -334,6 +335,7 @@ export default function HomePage() {
 
     let cancelled = false;
     let firstSnapshotReceived = false;
+    let unsub: (() => void) | undefined;
 
     const applyMeta = (data: Partial<Meta> | null) => {
       if (cancelled) return;
@@ -344,62 +346,75 @@ export default function HomePage() {
       setMeta({ ...defaultMeta, ...data });
     };
 
-    const unsub = onSnapshot(
-      metaRef,
-      { includeMetadataChanges: true },
-      (snap) => {
-        firstSnapshotReceived = true;
-
-        console.log("📸 SNAPSHOT META:", {
-          exists: snap.exists(),
-          fromCache: snap.metadata.fromCache,
-          hasPendingWrites: snap.metadata.hasPendingWrites,
-          data: snap.exists() ? snap.data() : null,
-          onlineStatus: navigator.onLine,
-        });
-
-        if (!snap.exists()) {
-          console.log("❌ SNAP NO EXISTE - no se escriben defaults automáticamente");
-          applyMeta(null);
-        } else {
-          console.log("✅ SNAP EXISTE - cargando datos:", snap.data());
-          applyMeta(snap.data() as Partial<Meta>);
-        }
-      },
-      (error) => {
-        console.error("❌ ERROR onSnapshot META:", error);
-      }
-    );
-
-    const fallbackTimer = window.setTimeout(async () => {
-      if (cancelled || firstSnapshotReceived) return;
-
-      console.warn("⏳ onSnapshot META no respondió; usando getDoc de respaldo");
-
+    const start = async () => {
       try {
-        const snap = await getDoc(metaRef);
+        await enableNetwork(db);
+        console.log("🌐 Firestore network enabled");
+      } catch (error) {
+        console.error("❌ ERROR enableNetwork:", error);
+      }
 
+      if (cancelled) return;
+
+      unsub = onSnapshot(
+        metaRef,
+        { includeMetadataChanges: true },
+        (snap) => {
+          firstSnapshotReceived = true;
+
+          console.log("📸 SNAPSHOT META:", {
+            exists: snap.exists(),
+            fromCache: snap.metadata.fromCache,
+            hasPendingWrites: snap.metadata.hasPendingWrites,
+            data: snap.exists() ? snap.data() : null,
+            onlineStatus: navigator.onLine,
+          });
+
+          if (!snap.exists()) {
+            console.log("❌ SNAP NO EXISTE - no se escriben defaults automáticamente");
+            applyMeta(null);
+          } else {
+            console.log("✅ SNAP EXISTE - cargando datos:", snap.data());
+            applyMeta(snap.data() as Partial<Meta>);
+          }
+        },
+        (error) => {
+          console.error("❌ ERROR onSnapshot META:", error);
+        }
+      );
+
+      window.setTimeout(async () => {
         if (cancelled || firstSnapshotReceived) return;
 
-        console.log("🆘 GETDOC META fallback:", {
-          exists: snap.exists(),
-          data: snap.exists() ? snap.data() : null,
-        });
+        console.warn("⏳ onSnapshot META no respondió; usando getDoc de respaldo");
 
-        if (!snap.exists()) {
-          applyMeta(null);
-        } else {
-          applyMeta(snap.data() as Partial<Meta>);
+        try {
+          await enableNetwork(db);
+          const snap = await getDoc(metaRef);
+
+          if (cancelled || firstSnapshotReceived) return;
+
+          console.log("🆘 GETDOC META fallback:", {
+            exists: snap.exists(),
+            data: snap.exists() ? snap.data() : null,
+          });
+
+          if (!snap.exists()) {
+            applyMeta(null);
+          } else {
+            applyMeta(snap.data() as Partial<Meta>);
+          }
+        } catch (error) {
+          console.error("❌ ERROR getDoc META fallback:", error);
         }
-      } catch (error) {
-        console.error("❌ ERROR getDoc META fallback:", error);
-      }
-    }, 1500);
+      }, 1500);
+    };
+
+    start();
 
     return () => {
       cancelled = true;
-      window.clearTimeout(fallbackTimer);
-      unsub();
+      if (unsub) unsub();
     };
   }, [month, user]);
 

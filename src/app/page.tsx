@@ -180,6 +180,7 @@ const CATEGORY_OPTIONS = [
 
 export default function HomePage() {
   const [meta, setMeta] = useState<Meta>(defaultMeta);
+  const [metaLoaded, setMetaLoaded] = useState(false);
   const [txs, setTxs] = useState<Tx[]>([]);
   // Obtener mes actual automáticamente
   const getCurrentMonth = () => {
@@ -210,6 +211,7 @@ export default function HomePage() {
   const [localSavingsSoFar, setLocalSavingsSoFar] = useState<string>("");
 
   console.log("🪞 render meta/local:", {
+    metaLoaded,
     meta,
     localIncomeP1,
     localIncomeP2,
@@ -335,8 +337,11 @@ export default function HomePage() {
 
     if (!user) {
       setMeta(defaultMeta);
+      setMetaLoaded(false);
       return;
     }
+
+    setMetaLoaded(false);
 
     const BUDGET_ID = getBudgetId(user.uid);
     const metaRef = doc(db, `budgets/${BUDGET_ID}/months/${month}/meta/main`);
@@ -355,12 +360,14 @@ export default function HomePage() {
       if (!data) {
         console.log("🧠 applyMeta -> defaultMeta");
         setMeta(defaultMeta);
+        setMetaLoaded(true);
         return;
       }
 
       const nextMeta = { ...defaultMeta, ...data };
       console.log("🧠 applyMeta -> nextMeta:", nextMeta);
       setMeta(nextMeta);
+      setMetaLoaded(true);
     };
 
     const start = async () => {
@@ -443,7 +450,12 @@ export default function HomePage() {
 
   // Sincronizar estados locales cuando meta cambia desde Firestore (o al cambiar de mes)
   useEffect(() => {
-    console.log("🔁 sync locals from meta:", meta);
+    console.log("🔁 sync locals from meta:", { metaLoaded, meta });
+
+    if (!metaLoaded) {
+      console.log("⏸️ meta aún no cargada; no sincronizo estados locales");
+      return;
+    }
 
     setLocalIncomeP1(meta.incomeP1 == null ? "" : String(meta.incomeP1));
     setLocalIncomeP2(meta.incomeP2 == null ? "" : String(meta.incomeP2));
@@ -451,7 +463,7 @@ export default function HomePage() {
     setLocalExtraSavings(meta.extraSavings == null ? "" : String(meta.extraSavings));
     setLocalSavingsGoal(meta.savingsGoal == null ? "" : String(meta.savingsGoal));
     setLocalSavingsSoFar(meta.savingsSoFar == null ? "" : String(meta.savingsSoFar));
-  }, [meta]);
+  }, [meta, metaLoaded]);
 
   // 2) Escuchar TRANSACCIONES en tiempo real
   useEffect(() => {

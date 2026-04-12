@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { LogOut } from "lucide-react";
 import { toast } from "sonner";
 import PersonPicker, { getPerson, loadNames } from "@/components/PersonPicker";
@@ -337,6 +337,18 @@ export default function HomePage() {
       user === undefined ? "undefined" : user ? "authenticated" : "null",
     uid: user?.uid ?? null,
   });
+
+  const reloadMonthData = useCallback(async () => {
+    if (!user) return;
+
+    const data = await fetchBootstrapMonth(user.uid, month);
+
+    console.log("🔄 reloadMonthData response:", data);
+
+    setMeta({ ...defaultMeta, ...data.meta });
+    setTxs(data.transactions);
+    setMetaLoaded(true);
+  }, [user, month]);
   useEffect(() => {
     if (user === undefined) return;
     if (!user) return;
@@ -376,15 +388,9 @@ export default function HomePage() {
 
     const start = async () => {
       try {
-        const data = await fetchBootstrapMonth(user.uid, month);
+        await reloadMonthData();
 
         if (cancelled) return;
-
-        console.log("🌐 bootstrap-month response:", data);
-
-        setMeta({ ...defaultMeta, ...data.meta });
-        setTxs(data.transactions);
-        setMetaLoaded(true);
       } catch (error) {
         console.error("❌ ERROR bootstrap-month:", error);
         if (cancelled) return;
@@ -399,7 +405,7 @@ export default function HomePage() {
     return () => {
       cancelled = true;
     };
-  }, [month, user]);
+  }, [month, user, reloadMonthData]);
 
   // Sincronizar estados locales cuando meta cambia desde Firestore (o al cambiar de mes)
   useEffect(() => {
@@ -474,6 +480,7 @@ export default function HomePage() {
     const BUDGET_ID = getBudgetId(user.uid);
     const metaRef = doc(db, `budgets/${BUDGET_ID}/months/${month}/meta/main`);
     await setDoc(metaRef, { ...next, ownerId: user.uid }, { merge: true });
+    await reloadMonthData();
   }
 
   // NUEVA FUNCIONALIDAD: Consolidar ahorro del mes
@@ -508,7 +515,7 @@ export default function HomePage() {
     });
   }
 
-  function addExpense() {
+  async function addExpense() {
     if (!user) return;
     const person = getPerson(user.uid);
     if (!person) {
@@ -535,21 +542,27 @@ export default function HomePage() {
       `budgets/${BUDGET_ID}/months/${month}/transactions`
     );
 
-    pendingAddRef.current = true;
-    addDoc(colRef, {
-      type: "expense",
-      date,
-      category: category.trim().toLowerCase(),
-      concept: concept.trim().toLowerCase(),
-      amount: parseFloat(amount.replace(',', '.')),
-      person,
-      createdAt: serverTimestamp(),
-      ownerId: user.uid,
-    }).catch((err) => {
-      pendingAddRef.current = false;
+    try {
+      await addDoc(colRef, {
+        type: "expense",
+        date,
+        category: category.trim().toLowerCase(),
+        concept: concept.trim().toLowerCase(),
+        amount: parseFloat(amount.replace(',', '.')),
+        person,
+        createdAt: serverTimestamp(),
+        ownerId: user.uid,
+      });
+
+      await reloadMonthData();
+      setConcept("");
+      setAmount("");
+      setDate(getCurrentDate());
+      toast.success("✅ Gasto añadido correctamente");
+    } catch (err) {
       console.error("Error al añadir gasto:", err);
       toast.error("Error al guardar el gasto");
-    });
+    }
   }
 
   async function deleteExpense(id: string) {
@@ -561,6 +574,7 @@ export default function HomePage() {
     );
     try {
       await deleteDoc(ref);
+      await reloadMonthData();
     } catch (err) {
       console.error("Error al eliminar gasto:", err);
       alert("No se pudo eliminar el gasto. Inténtalo de nuevo.");

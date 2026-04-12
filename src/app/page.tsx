@@ -230,6 +230,7 @@ export default function HomePage() {
   const [names, setNames] = useState<string[]>([]);
 
   const [selectedCat, setSelectedCat] = useState<string | null>(null);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 
   // Estados locales para inputs de meta — evitan escribir a Firestore en cada keystroke
   const [localIncomeP1, setLocalIncomeP1] = useState<string>("");
@@ -558,7 +559,7 @@ export default function HomePage() {
       setConcept("");
       setAmount("");
       setDate(getCurrentDate());
-      toast.success("✅ Gasto añadido correctamente");
+      toast.success("Gasto añadido correctamente");
     } catch (err) {
       console.error("Error al añadir gasto:", err);
       toast.error("Error al guardar el gasto");
@@ -1443,11 +1444,7 @@ export default function HomePage() {
                                 </span>
 
                                 <button
-                                  onClick={() => {
-                                    if (confirm("¿Borrar gasto?")) {
-                                      deleteExpense(it.id);
-                                    }
-                                  }}
+                                  onClick={() => setPendingDeleteId(it.id)}
                                   className="ml-auto rounded-lg border border-red-400/90 bg-red-500/50 px-3 py-1 text-xs text-red-100 hover:bg-red-500/90 transition"
                                 >
                                   BORRAR
@@ -1466,6 +1463,30 @@ export default function HomePage() {
         </div>
         )}
       </div>
+
+      {/* Modal confirmación borrar gasto */}
+      {pendingDeleteId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="rounded-2xl border border-white/10 bg-gray-900/95 p-6 shadow-2xl w-80">
+            <p className="text-white text-base font-semibold mb-1">¿Borrar gasto?</p>
+            <p className="text-white/50 text-sm mb-6">Esta acción no se puede deshacer.</p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => { deleteExpense(pendingDeleteId); setPendingDeleteId(null); }}
+                className="flex-1 rounded-xl bg-red-500/80 py-2 text-sm font-semibold text-white hover:bg-red-500 transition"
+              >
+                Borrar
+              </button>
+              <button
+                onClick={() => setPendingDeleteId(null)}
+                className="flex-1 rounded-xl bg-white/10 py-2 text-sm font-semibold text-white hover:bg-white/20 transition"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

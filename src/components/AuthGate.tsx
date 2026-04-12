@@ -11,6 +11,10 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (u) => {
+      console.log("🛂 AuthGate onAuthStateChanged:", {
+        uid: u?.uid ?? null,
+        email: u?.email ?? null,
+      });
       setUser(u);
     });
     return () => unsub();
@@ -18,6 +22,12 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
 
   if (user === undefined) return <div style={{ padding: 16 }}>Cargando…</div>;
   if (!user) return <AuthForm onAuth={() => {}} />;
+
+  console.log("🛂 AuthGate render:", {
+    userState:
+      user === undefined ? "undefined" : user ? "authenticated" : "null",
+    uid: user?.uid ?? null,
+  });
 
   return <AuthUserProvider user={user}>{children}</AuthUserProvider>;
 }

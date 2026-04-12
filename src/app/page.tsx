@@ -289,6 +289,11 @@ export default function HomePage() {
 
   // 1) Escuchar META en tiempo real
   const user = useAuthUser();
+  console.log("🏠 HomePage user:", {
+    userState:
+      user === undefined ? "undefined" : user ? "authenticated" : "null",
+    uid: user?.uid ?? null,
+  });
   useEffect(() => {
     if (user === undefined) return;
     if (!user) return;
@@ -307,6 +312,13 @@ export default function HomePage() {
     } catch {}
   }, [user]);
   useEffect(() => {
+    console.log("📡 useEffect META start:", {
+      month,
+      userState:
+        user === undefined ? "undefined" : user ? "authenticated" : "null",
+      uid: user?.uid ?? null,
+    });
+    
     if (user === undefined) return;
     if (!user) return;
     const BUDGET_ID = getBudgetId(user.uid);

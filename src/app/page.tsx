@@ -773,7 +773,7 @@ export default function HomePage() {
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-sm font-medium text-white/90 mb-2">📦 Programado</label>
+                      <label className="block text-sm font-medium text-white/90 mb-2">📦 Aportado</label>
                       <div className="relative">
                         <input
                           type="number"
@@ -1030,8 +1030,8 @@ export default function HomePage() {
                     </div>
                   ) : (
                     <div className="text-sm sm:text-base text-indigo-200/80 leading-relaxed mt-auto">
-                      💾 Programado: {totals.saving.toFixed(2)}€<br/>
-                      ✨ Extra: {totals.extraSaving.toFixed(2)}€
+                      💾 Aportado: {totals.saving.toFixed(2)}€<br/>
+                      ✨ Extra aportado: {totals.extraSaving.toFixed(2)}€
                     </div>
                   )}
                 </div>

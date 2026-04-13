@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { LogOut } from "lucide-react";
 import { toast } from "sonner";
-import PersonPicker, { getPerson, loadNames } from "@/components/PersonPicker";
+import PersonPicker, { getPerson, loadNames, getPersonColor } from "@/components/PersonPicker";
 import { db, auth } from "@/lib/firebase";
 import { signOut } from "firebase/auth";
 import { useAuthUser } from "@/lib/auth-context";
@@ -1369,6 +1369,7 @@ export default function HomePage() {
             pieData={pieData}
             barData={barData}
             names={names}
+            uid={user!.uid}
           />
         )}
 
@@ -1434,11 +1435,8 @@ export default function HomePage() {
                                 </span>
 
                                 <span
-                                  className={`text-xs font-semibold ${
-                                    it.person === "alba"
-                                      ? "text-blue-400"
-                                      : "text-green-400"
-                                  }`}
+                                  className="text-xs font-semibold"
+                                  style={{ color: getPersonColor(user!.uid, it.person, names) }}
                                 >
                                   {it.person}
                                 </span>
@@ -1506,6 +1504,7 @@ function AnalyticsPanel({
   selectedCat,
   setSelectedCat,
   names,
+  uid,
 }: {
   month: string;
   categories: string[];
@@ -1521,6 +1520,7 @@ function AnalyticsPanel({
   selectedCat: string | null;
   setSelectedCat: (v: string | null) => void;
   names: string[];
+  uid: string;
 }) {
   // Calcular estadísticas
   const totalFiltered = filteredTxs.reduce((sum, t) => sum + t.amount, 0);
@@ -1787,11 +1787,12 @@ function AnalyticsPanel({
                       {t.amount.toFixed(2)} €
                     </div>
                     <div
-                      className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                        t.person === "alba" 
-                          ? "bg-blue-500/30 text-blue-200 border border-blue-400/40" 
-                          : "bg-green-500/30 text-green-200 border border-green-400/40"
-                      }`}
+                      className="rounded-full px-3 py-1 text-xs font-semibold border"
+                      style={{
+                        backgroundColor: getPersonColor(uid, t.person, names) + "4d",
+                        color: getPersonColor(uid, t.person, names),
+                        borderColor: getPersonColor(uid, t.person, names) + "66",
+                      }}
                     >
                       {t.person}
                     </div>
@@ -1816,6 +1817,8 @@ function AnalyticsPanel({
           category={selectedCat}
           onClose={() => setSelectedCat(null)}
           items={filteredTxs.filter((t) => t.category === selectedCat)}
+          uid={uid}
+          names={names}
         />
       )}
     </div>
@@ -1826,10 +1829,14 @@ function CategoryModal({
   category,
   items,
   onClose,
+  uid,
+  names,
 }: {
   category: string;
   items: Tx[];
   onClose: () => void;
+  uid: string;
+  names: string[];
 }) {
   const total = items.reduce((a, t) => a + (Number(t.amount) || 0), 0);
 
@@ -1880,9 +1887,8 @@ function CategoryModal({
               <div className="flex items-center gap-3">
                 <div className="text-sm font-bold">{t.amount.toFixed(2)} €</div>
                 <div
-                  className={`text-xs font-semibold ${
-                    t.person === "alba" ? "text-blue-200" : "text-orange-200"
-                  }`}
+                  className="text-xs font-semibold"
+                  style={{ color: getPersonColor(uid, t.person, names) }}
                 >
                   {t.person}
                 </div>

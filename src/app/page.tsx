@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { LogOut } from "lucide-react";
+import BudgetModal from "@/components/BudgetModal";
 import { toast } from "sonner";
 import PersonPicker, { getPerson, loadNames, getPersonColor } from "@/components/PersonPicker";
 import { db, auth } from "@/lib/firebase";
@@ -222,6 +223,7 @@ export default function HomePage() {
   };
   const [month, setMonth] = useState(getCurrentMonth());
 
+  const [showBudgetModal, setShowBudgetModal] = useState(false);
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [showExpenses, setShowExpenses] = useState(false);
   const [filterCat, setFilterCat] = useState<string>("all");
@@ -653,6 +655,15 @@ export default function HomePage() {
                 <span className="text-xs text-white/60 hidden sm:block">Actualizar</span>
               </div>
               */}
+              <div className="flex flex-col items-center gap-1">
+                <button
+                  onClick={() => setShowBudgetModal(true)}
+                  className="rounded-xl border border-indigo-400/50 bg-indigo-500/20 px-3 py-2 text-xs font-bold text-indigo-200 hover:bg-indigo-500/30 transition"
+                  title="Presupuesto estimado"
+                >
+                  📊
+                </button>
+              </div>
               <div className="flex flex-col items-center gap-1">
                 <button
                   onClick={() => signOut(auth)}
@@ -1484,6 +1495,14 @@ export default function HomePage() {
             </div>
           </div>
         </div>
+      )}
+      {showBudgetModal && user && (
+        <BudgetModal
+          uid={user.uid}
+          month={month}
+          totalIncome={totals.totalIncome}
+          onClose={() => setShowBudgetModal(false)}
+        />
       )}
     </div>
   );

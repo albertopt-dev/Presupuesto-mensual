@@ -621,6 +621,15 @@ export default function HomePage() {
             </div>
 
             {/* DERECHA: controles */}
+            <div className="flex flex-col items-center gap-1">
+                <button
+                  onClick={() => setShowBudgetModal(true)}
+                  className="rounded-xl border border-indigo-400/50 bg-indigo-500/20 px-3 py-2 text-sm font-semibold text-indigo-200 hover:bg-indigo-500/30 transition"
+                  title="Presupuesto estimado"
+                >
+                   Previsión de gastos
+                </button>
+              </div>
             <div className="flex flex-wrap items-center gap-2 sm:gap-3 overflow-hidden">
               {/* Selector de mes */}
               <input
@@ -655,15 +664,7 @@ export default function HomePage() {
                 <span className="text-xs text-white/60 hidden sm:block">Actualizar</span>
               </div>
               */}
-              <div className="flex flex-col items-center gap-1">
-                <button
-                  onClick={() => setShowBudgetModal(true)}
-                  className="rounded-xl border border-indigo-400/50 bg-indigo-500/20 px-3 py-2 text-xs font-bold text-indigo-200 hover:bg-indigo-500/30 transition"
-                  title="Presupuesto estimado"
-                >
-                  📊
-                </button>
-              </div>
+              
               <div className="flex flex-col items-center gap-1">
                 <button
                   onClick={() => signOut(auth)}

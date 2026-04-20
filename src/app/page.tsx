@@ -613,7 +613,7 @@ export default function HomePage() {
       <div className="mx-auto max-w-7xl px-4 py-8">
         {/* Header */}
         <div className="mb-6 flex flex-col gap-3">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             {/* FILA 1 móvil / Left desktop: título + salir (solo móvil) */}
             <div className="flex items-center justify-between sm:justify-start">
               <div className="flex items-center gap-3">
@@ -629,9 +629,18 @@ export default function HomePage() {
               </button>
             </div>
 
-            {/* FILAS 2-3 móvil / Right desktop: controles */}
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
-              {/* Selector de mes: ancho completo en móvil */}
+            {/* FILAS 2-4 móvil / Right desktop: controles */}
+            <div className="mt-2 flex flex-col items-center gap-3 sm:mt-0 sm:flex-row sm:items-center sm:gap-3">
+              {/* Botón Previsión */}
+              <button
+                onClick={() => setShowBudgetModal(true)}
+                className="sm:w-auto rounded-xl border border-orange-400/60 bg-gradient-to-r from-orange-500 to-amber-400 px-3 py-2 text-sm font-bold text-black hover:from-orange-400 hover:to-amber-300 transition"
+                title="Presupuesto estimado"
+              >
+                Previsión de gastos
+              </button>
+
+              {/* Selector de mes */}
               <input
                 type="month"
                 value={month}
@@ -639,7 +648,7 @@ export default function HomePage() {
                   console.log('🗓️ Cambiando mes a:', e.target.value);
                   setMonth(e.target.value);
                 }}
-                className="w-full sm:w-auto rounded-xl border border-white/100 bg-yellow-100/80 px-3 py-2 text-sm text-black font-semibold outline-none focus:ring-2 focus:ring-white/20"
+                className="w-36 max-w-fit rounded-xl border border-white/30 bg-yellow-100/80 px-4 py-2 text-sm text-black font-semibold outline-none focus:ring-2 focus:ring-white/20"
               />
 
               {/* Chip "Para gastar": visible en móvil y desktop */}
@@ -651,15 +660,6 @@ export default function HomePage() {
                   {totals.saldoFinalMes.toFixed(2)} €
                 </span>
               </div>
-
-              {/* Botón Previsión: ancho completo en móvil */}
-              <button
-                onClick={() => setShowBudgetModal(true)}
-                className="w-full sm:w-auto rounded-xl border border-indigo-400/50 bg-indigo-500/20 px-3 py-2 text-sm font-semibold text-indigo-200 hover:bg-indigo-500/30 transition"
-                title="Presupuesto estimado"
-              >
-                Previsión de gastos
-              </button>
 
               {/* Salir: solo visible en desktop */}
               <button

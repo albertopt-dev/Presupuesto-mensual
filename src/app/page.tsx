@@ -613,25 +613,25 @@ export default function HomePage() {
       <div className="mx-auto max-w-7xl px-4 py-8">
         {/* Header */}
         <div className="mb-6 flex flex-col gap-3">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            {/* IZQUIERDA: icono + título juntos */}
-            <div className="flex items-center gap-3">
-              <span className="text-3xl">💰</span>
-              <h1 className="text-2xl font-bold text-white">Presupuesto</h1>
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            {/* FILA 1 móvil / Left desktop: título + salir (solo móvil) */}
+            <div className="flex items-center justify-between sm:justify-start">
+              <div className="flex items-center gap-3">
+                <span className="text-3xl">💰</span>
+                <h1 className="text-2xl font-bold text-white">Presupuesto</h1>
+              </div>
+              <button
+                onClick={() => signOut(auth)}
+                className="sm:hidden rounded-xl border border-white bg-red-500/20 px-3 py-2 text-xs font-bold text-red-500 hover:bg-red-500/50 transition"
+                title="Cerrar sesión"
+              >
+                <LogOut size={16} className="text-red-400" />
+              </button>
             </div>
 
-            {/* DERECHA: controles */}
-            <div className="flex flex-col items-center gap-1">
-                <button
-                  onClick={() => setShowBudgetModal(true)}
-                  className="rounded-xl border border-indigo-400/50 bg-indigo-500/20 px-3 py-2 text-sm font-semibold text-indigo-200 hover:bg-indigo-500/30 transition"
-                  title="Presupuesto estimado"
-                >
-                   Previsión de gastos
-                </button>
-              </div>
-            <div className="flex flex-wrap items-center gap-2 sm:gap-3 overflow-hidden">
-              {/* Selector de mes */}
+            {/* FILAS 2-3 móvil / Right desktop: controles */}
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+              {/* Selector de mes: ancho completo en móvil */}
               <input
                 type="month"
                 value={month}
@@ -639,11 +639,11 @@ export default function HomePage() {
                   console.log('🗓️ Cambiando mes a:', e.target.value);
                   setMonth(e.target.value);
                 }}
-                className="rounded-xl border border-white/100 bg-yellow-100/80 px-3 py-2 text-sm text-black font-semibold outline-none focus:ring-2 focus:ring-white/20 max-w-[150px] sm:max-w-none"
+                className="w-full sm:w-auto rounded-xl border border-white/100 bg-yellow-100/80 px-3 py-2 text-sm text-black font-semibold outline-none focus:ring-2 focus:ring-white/20"
               />
 
-              {/* Chip disponible con color */}
-              <div className="hidden sm:flex items-center gap-2 whitespace-nowrap rounded-2xl border border-cyan-300/80 bg-cyan-500/10 px-4 py-2 text-sm shadow backdrop-blur">
+              {/* Chip "Para gastar": visible en móvil y desktop */}
+              <div className="flex items-center gap-2 whitespace-nowrap rounded-2xl border border-cyan-300/80 bg-cyan-500/10 px-4 py-2 text-sm shadow backdrop-blur">
                 <span className="text-white/70">Para gastar:</span>
                 <span className={`font-bold text-base ${
                   totals.saldoFinalMes >= 0 ? 'text-green-400' : 'text-red-400'
@@ -651,29 +651,24 @@ export default function HomePage() {
                   {totals.saldoFinalMes.toFixed(2)} €
                 </span>
               </div>
-              
-              {/* BOTÓN ACTUALIZAR - comentado temporalmente, descomentar si se necesita
-              <div className="ml-auto flex flex-col items-center gap-1">
-                <button
-                  onClick={() => window.location.reload()}
-                  className="rounded-xl border border-orange-400/50 bg-orange-500/20 px-3 py-2 text-xs font-bold text-orange-200 hover:bg-orange-500/30 transition"
-                  title="Forzar actualización de la app"
-                >
-                  🔄
-                </button>
-                <span className="text-xs text-white/60 hidden sm:block">Actualizar</span>
-              </div>
-              */}
-              
-              <div className="flex flex-col items-center gap-1">
-                <button
-                  onClick={() => signOut(auth)}
-                  className="rounded-xl border border-white bg-red-500/20 px-3 py-2 text-xs font-bold text-red-500 hover:bg-red-500/50 transition"
-                  title="Cerrar sesión"
-                >
-                  <LogOut size={16} className="text-red-400" />
-                </button>
-              </div>
+
+              {/* Botón Previsión: ancho completo en móvil */}
+              <button
+                onClick={() => setShowBudgetModal(true)}
+                className="w-full sm:w-auto rounded-xl border border-indigo-400/50 bg-indigo-500/20 px-3 py-2 text-sm font-semibold text-indigo-200 hover:bg-indigo-500/30 transition"
+                title="Presupuesto estimado"
+              >
+                Previsión de gastos
+              </button>
+
+              {/* Salir: solo visible en desktop */}
+              <button
+                onClick={() => signOut(auth)}
+                className="hidden sm:flex rounded-xl border border-white bg-red-500/20 px-3 py-2 text-xs font-bold text-red-500 hover:bg-red-500/50 transition"
+                title="Cerrar sesión"
+              >
+                <LogOut size={16} className="text-red-400" />
+              </button>
             </div>
           </div>
 

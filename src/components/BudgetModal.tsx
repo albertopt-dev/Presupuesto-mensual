@@ -248,19 +248,17 @@ export default function BudgetModal({ uid, month, totalIncome, onClose }: Props)
 
         {/* ── Regla 50-30-20 — siempre visible ── */}
         <div className="flex-none mx-5 mt-4 rounded-2xl border border-indigo-400/25 bg-gradient-to-br from-indigo-500/10 to-purple-500/5 p-4">
-          <div className="flex items-start gap-3">
-            <span className="text-xl mt-0.5 flex-none">💡</span>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold text-indigo-200 mb-1">Regla 50-30-20</p>
-              <p className="text-xs text-white/55 leading-relaxed">
-                Destina el{" "}
-                <span className="font-semibold text-blue-300">50%</span> a gastos
-                esenciales (vivienda, alimentación, transporte), el{" "}
-                <span className="font-semibold text-orange-300">30%</span> a gastos
-                personales (ocio, ropa, restaurantes) y el{" "}
-                <span className="font-semibold text-emerald-300">20%</span> al ahorro.
-                Ajusta tus partidas para mantenerte dentro de cada límite.
-              </p>
+          <p className="text-sm font-bold text-indigo-200 mb-1">Regla 50-30-20</p>
+          <p className="text-xs text-white/55 leading-relaxed">
+            Destina el{" "}
+            <span className="font-semibold text-blue-300">50%</span> a gastos
+            esenciales (vivienda, alimentación, transporte), el{" "}
+            <span className="font-semibold text-orange-300">30%</span> a gastos
+            personales (ocio, ropa, restaurantes) y el{" "}
+            <span className="font-semibold text-emerald-300">20%</span> al ahorro.
+            Ajusta tus partidas para mantenerte dentro de cada límite.{" "}
+            <span className="text-base">💡</span>
+          </p>
               {totalIncome > 0 ? (
                 <div className="mt-3 flex flex-wrap gap-2">
                   <span className="rounded-lg border border-blue-400/35 bg-blue-500/15 px-2.5 py-1 text-xs font-semibold text-blue-300">
@@ -280,8 +278,6 @@ export default function BudgetModal({ uid, month, totalIncome, onClose }: Props)
                   </p>
                 </div>
               )}
-            </div>
-          </div>
         </div>
 
         {/* ── Tabs ── */}

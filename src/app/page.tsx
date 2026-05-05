@@ -30,20 +30,14 @@ import {
   Cell,
 } from "recharts";
 
-type Person = "alba" | "alberto";
+type Person = string;
 
 type Meta = {
-  incomeP1: number; // Alba
-  incomeP2: number; // Alberto
-  savingsSoFar: number; // ahorro acumulado total (solo informativo)
+  incomes: Record<string, number>;
 
-  // Ya lo tenías: lo tratamos como "ahorro apartado este mes"
+  savingsSoFar: number;
   savingTarget: number;
-
-  // NUEVO: objetivo mensual de ahorro (para progreso)
   savingsGoal: number;
-
-  // NUEVO: ahorro extra del mes
   extraSavings: number;
 };
 
@@ -61,12 +55,11 @@ type Tx = {
 const getBudgetId = (uid: string) => uid;
 
 const defaultMeta: Meta = {
-  incomeP1: 0,
-  incomeP2: 0,
+  incomes: {},
   savingTarget: 0,
   savingsSoFar: 0,
-  savingsGoal: 0, // NUEVO
-  extraSavings: 0, // NUEVO
+  savingsGoal: 0,
+  extraSavings: 0,
 };
 
 // Colores por categoría (fallback si no existe)
@@ -189,8 +182,11 @@ async function fetchBootstrapMonth(uid: string, month: string) {
 
   return res.json() as Promise<{
     meta: {
-      incomeP1: number;
-      incomeP2: number;
+      incomes?: Record<string, number>;
+
+      incomeP1?: number;
+      incomeP2?: number;
+
       savingTarget: number;
       savingsSoFar: number;
       savingsGoal: number;
@@ -235,8 +231,7 @@ export default function HomePage() {
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 
   // Estados locales para inputs de meta — evitan escribir a Firestore en cada keystroke
-  const [localIncomeP1, setLocalIncomeP1] = useState<string>("");
-  const [localIncomeP2, setLocalIncomeP2] = useState<string>("");
+  const [localIncomes, setLocalIncomes] = useState<Record<string, string>>({});
   const [localSavingTarget, setLocalSavingTarget] = useState<string>("");
   const [localExtraSavings, setLocalExtraSavings] = useState<string>("");
   const [localSavingsGoal, setLocalSavingsGoal] = useState<string>("");
@@ -245,8 +240,7 @@ export default function HomePage() {
   console.log("🪞 render meta/local:", {
     metaLoaded,
     meta,
-    localIncomeP1,
-    localIncomeP2,
+    localIncomes,
     localSavingTarget,
     localExtraSavings,
     localSavingsGoal,
@@ -345,10 +339,31 @@ export default function HomePage() {
     if (!user) return;
 
     const data = await fetchBootstrapMonth(user.uid, month);
+    const storedNames = loadNames(user.uid);
 
     console.log("🔄 reloadMonthData response:", data);
 
-    setMeta({ ...defaultMeta, ...data.meta });
+    const migratedIncomes =
+      data.meta.incomes && Object.keys(data.meta.incomes).length > 0
+        ? data.meta.incomes
+        : {
+            ...(storedNames[0]
+              ? { [storedNames[0]]: Number(data.meta.incomeP1) || 0 }
+              : {}),
+            ...(storedNames[1]
+              ? { [storedNames[1]]: Number(data.meta.incomeP2) || 0 }
+              : {}),
+          };
+
+    setMeta({
+      ...defaultMeta,
+      savingTarget: Number(data.meta.savingTarget) || 0,
+      savingsSoFar: Number(data.meta.savingsSoFar) || 0,
+      savingsGoal: Number(data.meta.savingsGoal) || 0,
+      extraSavings: Number(data.meta.extraSavings) || 0,
+      incomes: migratedIncomes,
+    });
+
     setTxs(data.transactions);
     setMetaLoaded(true);
   }, [user, month]);
@@ -419,23 +434,31 @@ export default function HomePage() {
       return;
     }
 
-    setLocalIncomeP1(meta.incomeP1 == null ? "" : String(meta.incomeP1));
-    setLocalIncomeP2(meta.incomeP2 == null ? "" : String(meta.incomeP2));
+    const nextLocalIncomes: Record<string, string> = {};
+
+    for (const name of names) {
+      nextLocalIncomes[name] =
+        meta.incomes?.[name] == null ? "" : String(meta.incomes[name]);
+    }
+
+    setLocalIncomes(nextLocalIncomes);
+
     setLocalSavingTarget(meta.savingTarget == null ? "" : String(meta.savingTarget));
     setLocalExtraSavings(meta.extraSavings == null ? "" : String(meta.extraSavings));
     setLocalSavingsGoal(meta.savingsGoal == null ? "" : String(meta.savingsGoal));
     setLocalSavingsSoFar(meta.savingsSoFar == null ? "" : String(meta.savingsSoFar));
-  }, [meta, metaLoaded]);
+  }, [meta, metaLoaded, names]);
 
 
   const totals = useMemo(() => {
-    const incomeP1 = Number(meta.incomeP1) || 0;
-    const incomeP2 = Number(meta.incomeP2) || 0;
+    const totalIncome = Object.values(meta.incomes ?? {}).reduce(
+      (sum, value) => sum + (Number(value) || 0),
+      0
+    );
 
     const saving = Number(meta.savingTarget) || 0; // ahorro programado este mes
     const extraSaving = Number(meta.extraSavings) || 0; // ahorro extra este mes
     const totalSavingThisMonth = saving + extraSaving; // total ahorro mes actual
-    const totalIncome = incomeP1 + incomeP2;
 
     // Disponible real (lo que queda para gastar) = ingresos - ahorro total - gastos
     const totalExpenses = txs.reduce(
@@ -701,43 +724,61 @@ export default function HomePage() {
                 </div>
 
                 <div className="space-y-4">
-                  {names[0] && (
-                  <div className="group">
-                    <label className="block text-sm font-medium text-white/90 mb-2">{names[0].charAt(0).toUpperCase() + names[0].slice(1)}</label>
-                    <div className="relative">
-                      <input
-                        type="number"
-                        value={localIncomeP1}
-                        onChange={(e) => setLocalIncomeP1(e.target.value)}
-                        onBlur={() => {
-                          const val = Number(localIncomeP1) || 0;
-                          if (val !== meta.incomeP1) saveMeta({ ...meta, incomeP1: val });
-                        }}
-                        className="w-full rounded-xl bg-black/30 border border-white/10 px-4 py-3 text-white placeholder-white/50 outline-none focus:border-emerald-400/50 focus:bg-black/40 focus:ring-2 focus:ring-emerald-400/20 transition-all"
-                        placeholder="Nómina..."
-                      />
-                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-white/70 text-sm">€</span>
-                    </div>
-                  </div>
-                  )}
-                  {names[1] && (
-                  <div className="group">
-                    <label className="block text-sm font-medium text-white/90 mb-2">{names[1].charAt(0).toUpperCase() + names[1].slice(1)}</label>
-                    <div className="relative">
-                      <input
-                        type="number"
-                        value={localIncomeP2}
-                        onChange={(e) => setLocalIncomeP2(e.target.value)}
-                        onBlur={() => {
-                          const val = Number(localIncomeP2) || 0;
-                          if (val !== meta.incomeP2) saveMeta({ ...meta, incomeP2: val });
-                        }}
-                        className="w-full rounded-xl bg-black/30 border border-white/10 px-4 py-3 text-white placeholder-white/50 outline-none focus:border-emerald-400/50 focus:bg-black/40 focus:ring-2 focus:ring-emerald-400/20 transition-all"
-                        placeholder="Nómina..."
-                      />
-                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-white/70 text-sm">€</span>
-                    </div>
-                  </div>
+                  {names.map((name) => {
+                    const personColor = getPersonColor(user!.uid, name, names);
+
+                    return (
+                      <div key={name} className="group">
+                        <label
+                          className="block text-sm font-medium mb-2"
+                          style={{ color: personColor }}
+                        >
+                          {name.charAt(0).toUpperCase() + name.slice(1)}
+                        </label>
+
+                        <div className="relative">
+                          <input
+                            type="number"
+                            value={localIncomes[name] ?? ""}
+                            onChange={(e) =>
+                              setLocalIncomes((prev) => ({
+                                ...prev,
+                                [name]: e.target.value,
+                              }))
+                            }
+                            onBlur={() => {
+                              const val = Number(localIncomes[name]) || 0;
+                              const currentValue = Number(meta.incomes?.[name]) || 0;
+
+                              if (val !== currentValue) {
+                                saveMeta({
+                                  ...meta,
+                                  incomes: {
+                                    ...(meta.incomes ?? {}),
+                                    [name]: val,
+                                  },
+                                });
+                              }
+                            }}
+                            className="w-full rounded-xl bg-black/30 border px-4 py-3 text-white placeholder-white/50 outline-none focus:bg-black/40 focus:ring-2 transition-all"
+                            style={{
+                              borderColor: `${personColor}55`,
+                            }}
+                            placeholder="Nómina..."
+                          />
+
+                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-white/70 text-sm">
+                            €
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  {names.length === 0 && (
+                    <p className="text-sm text-white/50">
+                      Añade una persona para introducir sus ingresos.
+                    </p>
                   )}
                 </div>
               </div>

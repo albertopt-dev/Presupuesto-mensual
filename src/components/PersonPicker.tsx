@@ -88,6 +88,7 @@ export default function PersonPicker({ uid, onNamesChange }: { uid: string; onNa
     const updated = { ...colors, [name]: hex };
     setColors(updated);
     saveColors(uid, updated);
+    onNamesChange?.([...names]);
   };
 
   const handleDelete = (name: string) => {
@@ -102,7 +103,9 @@ export default function PersonPicker({ uid, onNamesChange }: { uid: string; onNa
   };
 
   const colorIndex = names.indexOf(person ?? "");
-  const badge = COLORS[colorIndex >= 0 ? colorIndex : 0].badge;
+  const selectedColor = person
+  ? getPersonColor(uid, person, names)
+  : COLORS[colorIndex >= 0 ? colorIndex : 0].hex;
 
   if (!person) {
     return (
@@ -113,7 +116,11 @@ export default function PersonPicker({ uid, onNamesChange }: { uid: string; onNa
               <div key={name} className="flex items-center gap-1">
                 <button
                   onClick={() => handlePick(name)}
-                  className={`rounded-xl border px-4 py-2 font-semibold shadow-sm backdrop-blur transition ${COLORS[i % COLORS.length].button}`}
+                  className="rounded-xl border px-4 py-2 font-semibold text-white shadow-sm backdrop-blur transition hover:brightness-125"
+                  style={{
+                    backgroundColor: `${colors[name] ?? COLORS[i % COLORS.length].hex}80`,
+                    borderColor: `${colors[name] ?? COLORS[i % COLORS.length].hex}aa`,
+                  }}
                 >
                   SOY {name.toUpperCase()}
                 </button>
@@ -163,7 +170,14 @@ export default function PersonPicker({ uid, onNamesChange }: { uid: string; onNa
   return (
     <div className="flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/5 p-4 shadow-lg backdrop-blur">
       <div className="flex items-center gap-3">
-        <span className={`rounded-full border px-3 py-1 text-sm ${badge}`}>
+        <span
+          className="rounded-full border px-3 py-1 text-sm font-semibold"
+          style={{
+            backgroundColor: `${selectedColor}33`,
+            borderColor: `${selectedColor}99`,
+            color: selectedColor,
+          }}
+        >
           {person.charAt(0).toUpperCase() + person.slice(1)}
         </span>
         <span className="text-sm text-white/70">

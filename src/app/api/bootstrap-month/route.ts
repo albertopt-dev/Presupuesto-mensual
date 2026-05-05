@@ -2,8 +2,12 @@ import { NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase-admin";
 
 const defaultMeta = {
+  incomes: {} as Record<string, number>,
+
+  // Campos antiguos para compatibilidad
   incomeP1: 0,
   incomeP2: 0,
+
   savingTarget: 0,
   savingsSoFar: 0,
   savingsGoal: 0,
@@ -33,9 +37,16 @@ export async function GET(request: Request) {
       txsRef.get(),
     ]);
 
-    const meta = metaSnap.exists
-      ? { ...defaultMeta, ...(metaSnap.data() ?? {}) }
-      : defaultMeta;
+    const metaData = metaSnap.exists ? metaSnap.data() ?? {} : {};
+
+    const meta = {
+      ...defaultMeta,
+      ...metaData,
+      incomes:
+        typeof metaData.incomes === "object" && metaData.incomes !== null
+          ? metaData.incomes
+          : {},
+    };
 
     const transactions = txsSnap.docs
       .map((doc) => {

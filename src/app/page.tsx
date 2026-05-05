@@ -677,11 +677,11 @@ export default function HomePage() {
             </div>
 
             {/* FILAS 2-4 móvil / Right desktop: controles */}
-            <div className="mt-2 grid w-full grid-cols-1 sm:grid-cols-3 gap-3 sm:mt-0 sm:items-stretch">
+            <div className="mt-2 flex w-full max-w-sm flex-col gap-3 self-center sm:mt-0 sm:max-w-none sm:w-auto sm:flex-row sm:items-center sm:justify-end">
               {/* Botón Previsión */}
               <button
                 onClick={() => setShowBudgetModal(true)}
-                className="w-full rounded-xl border border-orange-400/60 bg-gradient-to-r from-orange-500 to-amber-400 px-3 py-3 text-sm font-bold text-black hover:from-orange-400 hover:to-amber-300 transition"
+                className="w-full sm:w-auto sm:min-w-44 rounded-xl border border-orange-400/60 bg-gradient-to-r from-orange-500 to-amber-400 px-4 py-2 text-sm font-bold text-black hover:from-orange-400 hover:to-amber-300 transition"
                 title="Presupuesto estimado"
               >
                 Previsión de gastos
@@ -692,14 +692,14 @@ export default function HomePage() {
                 type="month"
                 value={month}
                 onChange={(e) => {
-                  console.log('🗓️ Cambiando mes a:', e.target.value);
+                  console.log("🗓️ Cambiando mes a:", e.target.value);
                   setMonth(e.target.value);
                 }}
-                className="w-full rounded-xl border border-white/30 bg-yellow-100/80 px-4 py-3 text-sm text-black font-semibold outline-none focus:ring-2 focus:ring-white/20"
+                className="w-full sm:w-40 rounded-xl border border-white/30 bg-yellow-100/80 px-4 py-2 text-sm text-black font-semibold outline-none focus:ring-2 focus:ring-white/20"
               />
 
               {/* Chip "Para gastar": visible en móvil y desktop */}
-              <div className="flex w-full items-center justify-center gap-2 whitespace-nowrap rounded-xl border border-cyan-300/80 bg-cyan-500/10 px-4 py-3 text-sm shadow backdrop-blur">
+              <div className="flex w-full sm:w-auto sm:min-w-56 items-center justify-center gap-2 whitespace-nowrap rounded-xl border border-cyan-300/80 bg-cyan-500/10 px-4 py-2 text-sm shadow backdrop-blur">
                 <span className="text-white/70">Para gastar:</span>
                 <span className={`font-bold text-base ${
                   totals.saldoFinalMes >= 0 ? 'text-green-400' : 'text-red-400'
@@ -711,7 +711,7 @@ export default function HomePage() {
               {/* Salir: solo visible en desktop */}
               <button
                 onClick={() => signOut(auth)}
-                className="hidden sm:flex rounded-xl border border-white bg-red-500/20 px-3 py-2 text-xs font-bold text-red-500 hover:bg-red-500/50 transition"
+                className="hidden sm:flex h-10 w-10 items-center justify-center rounded-xl border border-white bg-red-500/20 text-xs font-bold text-red-500 hover:bg-red-500/50 transition"
                 title="Cerrar sesión"
               >
                 <LogOut size={16} className="text-red-400" />

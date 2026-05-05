@@ -509,6 +509,30 @@ export default function HomePage() {
     await reloadMonthData();
   }
 
+  async function handleNamesChange(updatedNames: string[]) {
+    setNames(updatedNames);
+
+    if (!user || !metaLoaded) return;
+
+    const currentIncomes = meta.incomes ?? {};
+
+    const cleanedIncomes = Object.fromEntries(
+      Object.entries(currentIncomes).filter(([name]) =>
+        updatedNames.includes(name)
+      )
+    );
+
+    const hasRemovedIncome =
+      Object.keys(cleanedIncomes).length !== Object.keys(currentIncomes).length;
+
+    if (!hasRemovedIncome) return;
+
+    await saveMeta({
+      ...meta,
+      incomes: cleanedIncomes,
+    });
+  }
+
   // NUEVA FUNCIONALIDAD: Consolidar ahorro del mes
   async function consolidateMonthSavings() {
     const totalSavingsThisMonth = (Number(meta.savingTarget) || 0) + (Number(meta.extraSavings) || 0);
@@ -653,11 +677,11 @@ export default function HomePage() {
             </div>
 
             {/* FILAS 2-4 móvil / Right desktop: controles */}
-            <div className="mt-2 flex flex-col items-center gap-3 sm:mt-0 sm:flex-row sm:items-center sm:gap-3">
+            <div className="mt-2 grid w-full grid-cols-1 sm:grid-cols-3 gap-3 sm:mt-0 sm:items-stretch">
               {/* Botón Previsión */}
               <button
                 onClick={() => setShowBudgetModal(true)}
-                className="sm:w-auto rounded-xl border border-orange-400/60 bg-gradient-to-r from-orange-500 to-amber-400 px-3 py-2 text-sm font-bold text-black hover:from-orange-400 hover:to-amber-300 transition"
+                className="w-full rounded-xl border border-orange-400/60 bg-gradient-to-r from-orange-500 to-amber-400 px-3 py-3 text-sm font-bold text-black hover:from-orange-400 hover:to-amber-300 transition"
                 title="Presupuesto estimado"
               >
                 Previsión de gastos
@@ -671,11 +695,11 @@ export default function HomePage() {
                   console.log('🗓️ Cambiando mes a:', e.target.value);
                   setMonth(e.target.value);
                 }}
-                className="w-36 max-w-fit rounded-xl border border-white/30 bg-yellow-100/80 px-4 py-2 text-sm text-black font-semibold outline-none focus:ring-2 focus:ring-white/20"
+                className="w-full rounded-xl border border-white/30 bg-yellow-100/80 px-4 py-3 text-sm text-black font-semibold outline-none focus:ring-2 focus:ring-white/20"
               />
 
               {/* Chip "Para gastar": visible en móvil y desktop */}
-              <div className="flex items-center gap-2 whitespace-nowrap rounded-2xl border border-cyan-300/80 bg-cyan-500/10 px-4 py-2 text-sm shadow backdrop-blur">
+              <div className="flex w-full items-center justify-center gap-2 whitespace-nowrap rounded-xl border border-cyan-300/80 bg-cyan-500/10 px-4 py-3 text-sm shadow backdrop-blur">
                 <span className="text-white/70">Para gastar:</span>
                 <span className={`font-bold text-base ${
                   totals.saldoFinalMes >= 0 ? 'text-green-400' : 'text-red-400'
@@ -696,7 +720,7 @@ export default function HomePage() {
           </div>
 
           <div className="mt-6"></div>
-          {user && <PersonPicker uid={user.uid} onNamesChange={setNames} />}
+          {user && <PersonPicker uid={user.uid} onNamesChange={handleNamesChange} />}
         </div>
 
         {/* RESUMEN */}

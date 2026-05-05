@@ -223,19 +223,19 @@ export default function BudgetModal({ uid, month, totalIncome, onClose }: Props)
       }`}
     >
       <div
-        className={`relative flex flex-col w-full sm:max-w-3xl h-[92vh] sm:max-h-[90vh] rounded-t-3xl sm:rounded-3xl border border-white/10 bg-gradient-to-br from-slate-900/98 via-indigo-950/95 to-slate-900/98 shadow-2xl backdrop-blur-xl overflow-hidden transition-all duration-300 ${
+        className={`relative flex flex-col w-full sm:max-w-3xl h-[100dvh] sm:h-auto sm:max-h-[90vh] rounded-none sm:rounded-3xl border border-white/10 bg-gradient-to-br from-slate-900/98 via-indigo-950/95 to-slate-900/98 shadow-2xl backdrop-blur-xl overflow-hidden transition-all duration-300 ${
           visible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
         }`}
       >
         {/* ── Modal header ── */}
-        <div className="flex-none flex items-center justify-between px-5 py-4 border-b border-white/10">
+        <div className="flex-none flex items-center justify-between px-4 sm:px-5 py-3 sm:py-4 border-b border-white/10">
           <div className="flex items-center gap-3">
             <span className="text-2xl">📊</span>
             <div>
-              <h2 className="text-base font-bold text-white leading-tight">
+              <h2 className="text-sm sm:text-base font-bold text-white leading-tight">
                 Presupuesto estimado
               </h2>
-              <p className="text-xs text-white/50 capitalize">{formatMonth(month)}</p>
+              <p className="text-[11px] sm:text-xs text-white/50 capitalize">{formatMonth(month)}</p>
             </div>
           </div>
           <button
@@ -247,41 +247,10 @@ export default function BudgetModal({ uid, month, totalIncome, onClose }: Props)
         </div>
 
         {/* ── Regla 50-30-20 — siempre visible ── */}
-        <div className="flex-none mx-5 mt-4 rounded-2xl border border-indigo-400/25 bg-gradient-to-br from-indigo-500/10 to-purple-500/5 p-4">
-          <p className="text-sm font-bold text-indigo-200 mb-1">Regla 50-30-20</p>
-          <p className="text-xs text-white/55 leading-relaxed">
-            Destina el{" "}
-            <span className="font-semibold text-blue-300">50%</span> a gastos
-            esenciales (vivienda, alimentación, transporte), el{" "}
-            <span className="font-semibold text-orange-300">30%</span> a gastos
-            personales (ocio, ropa, restaurantes) y el{" "}
-            <span className="font-semibold text-emerald-300">20%</span> al ahorro.
-            Ajusta tus partidas para mantenerte dentro de cada límite.{" "}
-            <span className="text-base">💡</span>
-          </p>
-              {totalIncome > 0 ? (
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <span className="rounded-lg border border-blue-400/35 bg-blue-500/15 px-2.5 py-1 text-xs font-semibold text-blue-300">
-                    🔵 Esenciales: {(totalIncome * 0.5).toFixed(2)} €
-                  </span>
-                  <span className="rounded-lg border border-orange-400/35 bg-orange-500/15 px-2.5 py-1 text-xs font-semibold text-orange-300">
-                    🟠 Personal: {(totalIncome * 0.3).toFixed(2)} €
-                  </span>
-                  <span className="rounded-lg border border-emerald-400/35 bg-emerald-500/15 px-2.5 py-1 text-xs font-semibold text-emerald-300">
-                    🟢 Ahorro: {(totalIncome * 0.2).toFixed(2)} €
-                  </span>
-                </div>
-              ) : (
-                <div className="mt-3 rounded-lg border border-amber-400/25 bg-amber-500/10 px-3 py-2">
-                  <p className="text-xs text-amber-300">
-                    ⚠️ Introduce tus ingresos del mes para ver los límites recomendados
-                  </p>
-                </div>
-              )}
-        </div>
+        
 
         {/* ── Tabs ── */}
-        <div className="flex-none mx-5 mt-4 grid grid-cols-2 gap-1 rounded-xl border border-white/10 bg-black/30 p-1">
+        <div className="flex-none mx-4 sm:mx-5 mt-3 sm:mt-4 grid grid-cols-2 gap-1 rounded-xl border border-white/10 bg-black/60 backdrop-blur p-1 sticky top-0 z-10">
           <button
             onClick={() => { setTab("budget"); setSelectedHistory(null); }}
             className={`rounded-lg py-2 text-sm font-semibold transition ${
@@ -306,7 +275,47 @@ export default function BudgetModal({ uid, month, totalIncome, onClose }: Props)
         </div>
 
         {/* ── Scrollable body ── */}
-        <div className="flex-1 overflow-y-auto px-5 pb-6 pt-4 space-y-4">
+        <div className="flex-1 overflow-y-auto px-4 sm:px-5 pb-6 pt-4 space-y-4">
+
+          <div className="rounded-2xl border border-indigo-400/25 bg-gradient-to-br from-indigo-500/10 to-purple-500/5 p-4 sm:p-4">
+            <p className="text-sm font-bold text-indigo-200 mb-1">Guía 50-30-20</p>
+
+            <p className="text-xs sm:text-xs text-white/60 leading-relaxed">
+              La regla 50-30-20 es una guía para repartir tus ingresos de forma equilibrada.
+              El{" "}
+              <span className="font-semibold text-blue-300">50%</span>{" "}
+              se reserva para gastos esenciales: alquiler o hipoteca, luz, agua, internet,
+              transporte, seguros, préstamos y compra semanal. El{" "}
+              <span className="font-semibold text-orange-300">30%</span>{" "}
+              es para gastos personales o de estilo de vida: ocio, restaurantes, ropa,
+              caprichos, suscripciones, viajes o compras no imprescindibles. El{" "}
+              <span className="font-semibold text-emerald-300">20%</span>{" "}
+              se destina al ahorro: fondo de emergencia, objetivos futuros, inversión o
+              amortizar deudas. Puedes ajustarla a tu situación, pero sirve como referencia
+              para saber si el mes está equilibrado.{" "}
+              <span className="text-base">💡</span>
+            </p>
+
+            {totalIncome > 0 ? (
+              <div className="mt-3 flex flex-wrap gap-2">
+                <span className="rounded-lg border border-blue-400/35 bg-blue-500/15 px-2.5 py-1 text-[11px] sm:text-xs font-semibold text-blue-300">
+                  🔵 Esenciales: {(totalIncome * 0.5).toFixed(2)} €
+                </span>
+                <span className="rounded-lg border border-orange-400/35 bg-orange-500/15 px-2.5 py-1 text-[11px] sm:text-xs font-semibold text-orange-300">
+                  🟠 Personal: {(totalIncome * 0.3).toFixed(2)} €
+                </span>
+                <span className="rounded-lg border border-emerald-400/35 bg-emerald-500/15 px-2.5 py-1 text-[11px] sm:text-xs font-semibold text-emerald-300">
+                  🟢 Ahorro: {(totalIncome * 0.2).toFixed(2)} €
+                </span>
+              </div>
+            ) : (
+              <div className="mt-3 rounded-lg border border-amber-400/25 bg-amber-500/10 px-3 py-2">
+                <p className="text-xs text-amber-300">
+                  Introduce los ingresos del mes para ver los importes recomendados.
+                </p>
+              </div>
+            )}
+          </div>
 
           {/* ────── TAB PRESUPUESTO ────── */}
           {tab === "budget" &&
@@ -321,13 +330,13 @@ export default function BudgetModal({ uid, month, totalIncome, onClose }: Props)
               return (
                 <div
                   key={section.key}
-                  className={`rounded-2xl border ${section.border} bg-gradient-to-br ${section.gradientBg} p-4`}
+                  className={`rounded-2xl border ${section.border} bg-gradient-to-br ${section.gradientBg} p-3 sm:p-4`}
                 >
                   {/* Section header */}
-                  <div className="flex items-center justify-between gap-2 mb-2">
+                  <div className="flex items-start sm:items-center justify-between gap-2 mb-2">
                     <div className="flex items-center gap-2">
                       <span className="text-base">{section.emoji}</span>
-                      <span className="text-sm font-bold text-white">{section.label}</span>
+                      <span className="text-sm sm:text-sm font-bold text-white">{section.label}</span>
                       <span className={`text-xs font-medium ${section.textColor}`}>
                         {section.pct}%
                       </span>

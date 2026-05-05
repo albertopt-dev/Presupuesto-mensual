@@ -2,8 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
-html, body {
+html,
+body {
   height: 100%;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+* {
+  box-sizing: border-box;
 }
 
 body {
@@ -17,7 +25,7 @@ body {
               linear-gradient(180deg, #0b1020 0%, #0a0f1c 100%);
 
   /* Evita “cortes” raros en algunos navegadores */
-  background-attachment: fixed;
+  background-attachment: scroll;
 }
 /* Scroll personalizado para área de movimientos */
 .scrollable-area::-webkit-scrollbar {
@@ -37,4 +45,14 @@ body {
 
 .scrollable-area::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.3);
+}
+
+.month-input {
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.month-input::-webkit-calendar-picker-indicator {
+  display: none;
+  -webkit-appearance: none;
 }

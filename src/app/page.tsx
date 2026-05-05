@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { LogOut } from "lucide-react";
 import BudgetModal from "@/components/BudgetModal";
 import { toast } from "sonner";
@@ -267,7 +267,6 @@ export default function HomePage() {
   const [category, setCategory] = useState("comida");
   const [concept, setConcept] = useState("");
   const [amount, setAmount] = useState<string>(""); // Cambiar a string vacío
-  const pendingAddRef = useRef(false);
 
   // Categorías personalizadas
   const [customCategories, setCustomCategories] = useState<string[]>([]);
@@ -716,11 +715,11 @@ export default function HomePage() {
             </div>
 
             {/* FILAS 2-4 móvil / Right desktop: controles */}
-            <div className="mt-2 mx-auto flex w-full max-w-[340px] flex-col gap-3 sm:mx-0 sm:mt-0 sm:max-w-none sm:w-auto sm:flex-row sm:items-center sm:justify-end">
+            <div className="mt-2 mx-auto flex w-full max-w-[310px] flex-col gap-3 sm:mx-0 sm:mt-0 sm:max-w-none sm:w-auto sm:flex-row sm:items-center sm:justify-end">
               {/* Botón Previsión */}
               <button
                 onClick={() => setShowBudgetModal(true)}
-                className="w-full sm:w-auto sm:min-w-44 rounded-xl border border-orange-400/60 bg-gradient-to-r from-orange-500 to-amber-400 px-4 py-2.5 sm:py-2 text-sm font-bold text-black hover:from-orange-400 hover:to-amber-300 transition"
+                className="w-full sm:w-auto sm:min-w-44 rounded-xl border border-orange-400/60 bg-gradient-to-r from-orange-500 to-amber-400 px-4 py-2.5 sm:py-2 text-base sm:text-sm font-bold text-black hover:from-orange-400 hover:to-amber-300 transition"
                 title="Presupuesto estimado"
               >
                 Previsión de gastos
@@ -734,11 +733,11 @@ export default function HomePage() {
                   console.log("🗓️ Cambiando mes a:", e.target.value);
                   setMonth(e.target.value);
                 }}
-                className="w-full sm:w-40 rounded-xl border border-white/30 bg-yellow-100/80 px-4 py-2.5 sm:py-2 text-sm text-black font-semibold outline-none focus:ring-2 focus:ring-white/20"
+                className="month-input w-full sm:w-40 rounded-xl border border-white/30 bg-yellow-100/80 px-4 py-2.5 sm:py-2 text-base sm:text-sm text-center text-black font-semibold outline-none focus:ring-2 focus:ring-white/20"
               />
 
               {/* Chip "Para gastar": visible en móvil y desktop */}
-              <div className="flex w-full sm:w-auto sm:min-w-56 items-center justify-center gap-2 whitespace-nowrap rounded-xl border border-cyan-300/80 bg-cyan-500/10 px-4 py-2.5 sm:py-2 text-sm shadow backdrop-blur">
+              <div className="flex w-full sm:w-auto sm:min-w-56 items-center justify-center gap-2 whitespace-nowrap rounded-xl border border-cyan-300/80 bg-cyan-500/10 px-4 py-2.5 sm:py-2 text-base sm:text-sm shadow backdrop-blur">
                 <span className="text-white/70">Para gastar:</span>
                 <span className={`font-bold text-base ${
                   totals.saldoFinalMes >= 0 ? 'text-green-400' : 'text-red-400'

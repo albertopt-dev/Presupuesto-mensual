@@ -168,10 +168,10 @@ export default function PersonPicker({ uid, onNamesChange }: { uid: string; onNa
   }
 
   return (
-    <div className="flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/5 p-4 shadow-lg backdrop-blur">
+    <div className="mx-auto flex w-full max-w-[340px] flex-col gap-3 rounded-2xl border border-white/10 bg-white/5 p-4 shadow-lg backdrop-blur sm:max-w-none sm:flex-row sm:items-center sm:justify-between">
       <div className="flex items-center gap-3">
         <span
-          className="rounded-full border px-3 py-1 text-sm font-semibold"
+          className="shrink-0 rounded-full border px-3 py-1 text-sm font-semibold"
           style={{
             backgroundColor: `${selectedColor}33`,
             borderColor: `${selectedColor}99`,
@@ -180,7 +180,8 @@ export default function PersonPicker({ uid, onNamesChange }: { uid: string; onNa
         >
           {person.charAt(0).toUpperCase() + person.slice(1)}
         </span>
-        <span className="text-sm text-white/70">
+
+        <span className="text-sm leading-snug text-white/70">
           Se usará este color para marcar tus gastos.
         </span>
       </div>
@@ -190,7 +191,7 @@ export default function PersonPicker({ uid, onNamesChange }: { uid: string; onNa
           localStorage.removeItem(`person_${uid}`);
           setPerson(null);
         }}
-        className="rounded-xl border border-white/10 bg-white/10 px-3 py-2 text-sm hover:bg-white/15 transition"
+        className="w-full rounded-xl border border-white/10 bg-white/10 px-3 py-2 text-sm font-semibold text-white hover:bg-white/15 transition sm:w-auto"
       >
         Cambiar
       </button>

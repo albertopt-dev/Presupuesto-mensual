@@ -14,6 +14,40 @@ const defaultMeta = {
   extraSavings: 0,
 };
 
+function getPreviousMonth(month: string, offset: number) {
+  const [yearRaw, monthRaw] = month.split("-").map(Number);
+
+  let year = yearRaw;
+  let monthNumber = monthRaw - offset;
+
+  while (monthNumber <= 0) {
+    monthNumber += 12;
+    year -= 1;
+  }
+
+  return `${year}-${String(monthNumber).padStart(2, "0")}`;
+}
+
+async function findPreviousSavingsSoFar(uid: string, month: string) {
+  for (let i = 1; i <= 24; i++) {
+    const previousMonth = getPreviousMonth(month, i);
+
+    const snap = await adminDb
+      .doc(`budgets/${uid}/months/${previousMonth}/meta/main`)
+      .get();
+
+    if (!snap.exists) continue;
+
+    const value = Number(snap.data()?.savingsSoFar ?? 0);
+
+    if (value > 0) {
+      return value;
+    }
+  }
+
+  return 0;
+}
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -39,6 +73,9 @@ export async function GET(request: Request) {
 
     const metaData = metaSnap.exists ? metaSnap.data() ?? {} : {};
 
+    const previousSavingsSoFar = await findPreviousSavingsSoFar(uid, month);
+    const currentSavingsSoFar = Number(metaData.savingsSoFar ?? 0);
+
     const meta = {
       ...defaultMeta,
       ...metaData,
@@ -46,6 +83,7 @@ export async function GET(request: Request) {
         typeof metaData.incomes === "object" && metaData.incomes !== null
           ? metaData.incomes
           : {},
+      savingsSoFar: currentSavingsSoFar > 0 ? currentSavingsSoFar : previousSavingsSoFar,
     };
 
     const transactions = txsSnap.docs

@@ -876,6 +876,7 @@ export default function HomePage() {
                   </div>
 
                   {/* Botones de acción mejorados */}
+                  {/* dejo comentado sugerencias por porcentaje por que ahora no lo uso
                   <div className="grid grid-cols-3 gap-2 pt-2">
                     {[10, 20, 30].map((p) => (
                       <button
@@ -891,6 +892,7 @@ export default function HomePage() {
                       </button>
                     ))}
                   </div>
+                  */}
 
                   {/* Acciones rápidas */}
                   <div className="grid grid-cols-3 gap-2">

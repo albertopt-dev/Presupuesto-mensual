@@ -15,6 +15,8 @@ import {
   addDoc,
   serverTimestamp,
   deleteDoc,
+  updateDoc,
+  deleteField,
 } from "firebase/firestore";
 
 import {
@@ -516,21 +518,37 @@ export default function HomePage() {
 
     const currentIncomes = meta.incomes ?? {};
 
-    const cleanedIncomes = Object.fromEntries(
-      Object.entries(currentIncomes).filter(([name]) =>
-        updatedNames.includes(name)
-      )
+    const removedNames = Object.keys(currentIncomes).filter(
+      (name) => !updatedNames.includes(name)
     );
 
-    const hasRemovedIncome =
-      Object.keys(cleanedIncomes).length !== Object.keys(currentIncomes).length;
+    if (removedNames.length === 0) return;
 
-    if (!hasRemovedIncome) return;
+    const BUDGET_ID = getBudgetId(user.uid);
+    const metaRef = doc(db, `budgets/${BUDGET_ID}/months/${month}/meta/main`);
 
-    await saveMeta({
-      ...meta,
-      incomes: cleanedIncomes,
+    const deletePayload: Record<string, ReturnType<typeof deleteField>> = {};
+
+    for (const name of removedNames) {
+      deletePayload[`incomes.${name}`] = deleteField();
+    }
+
+    await updateDoc(metaRef, deletePayload);
+
+    setMeta((prev) => {
+      const nextIncomes = { ...(prev.incomes ?? {}) };
+
+      for (const name of removedNames) {
+        delete nextIncomes[name];
+      }
+
+      return {
+        ...prev,
+        incomes: nextIncomes,
+      };
     });
+
+    await reloadMonthData();
   }
 
   // NUEVA FUNCIONALIDAD: Consolidar ahorro del mes

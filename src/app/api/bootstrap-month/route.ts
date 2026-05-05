@@ -12,6 +12,7 @@ const defaultMeta = {
   savingsSoFar: 0,
   savingsGoal: 0,
   extraSavings: 0,
+  savingsConsolidated: false,
 };
 
 function getPreviousMonth(month: string, offset: number) {
@@ -84,6 +85,7 @@ export async function GET(request: Request) {
           ? metaData.incomes
           : {},
       savingsSoFar: currentSavingsSoFar > 0 ? currentSavingsSoFar : previousSavingsSoFar,
+      savingsConsolidated: Boolean(metaData.savingsConsolidated),
     };
 
     const transactions = txsSnap.docs

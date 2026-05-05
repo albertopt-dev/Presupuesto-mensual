@@ -41,6 +41,8 @@ type Meta = {
   savingTarget: number;
   savingsGoal: number;
   extraSavings: number;
+
+  savingsConsolidated?: boolean;
 };
 
 type Tx = {
@@ -62,6 +64,7 @@ const defaultMeta: Meta = {
   savingsSoFar: 0,
   savingsGoal: 0,
   extraSavings: 0,
+  savingsConsolidated: false,
 };
 
 // Colores por categoría (fallback si no existe)
@@ -193,6 +196,7 @@ async function fetchBootstrapMonth(uid: string, month: string) {
       savingsSoFar: number;
       savingsGoal: number;
       extraSavings: number;
+      savingsConsolidated?: boolean;
     };
     transactions: Array<{
       id: string;
@@ -363,6 +367,7 @@ export default function HomePage() {
       savingsSoFar: Number(data.meta.savingsSoFar) || 0,
       savingsGoal: Number(data.meta.savingsGoal) || 0,
       extraSavings: Number(data.meta.extraSavings) || 0,
+      savingsConsolidated: Boolean(data.meta.savingsConsolidated),
       incomes: migratedIncomes,
     });
 
@@ -553,24 +558,40 @@ export default function HomePage() {
 
   // NUEVA FUNCIONALIDAD: Consolidar ahorro del mes
   async function consolidateMonthSavings() {
-    const totalSavingsThisMonth = (Number(meta.savingTarget) || 0) + (Number(meta.extraSavings) || 0);
-    
+    if (meta.savingsConsolidated) {
+      alert("El ahorro de este mes ya está consolidado.");
+      return;
+    }
+
+    const totalSavingsThisMonth =
+      (Number(meta.savingTarget) || 0) + (Number(meta.extraSavings) || 0);
+
     if (totalSavingsThisMonth <= 0) {
       alert("No hay ahorro del mes para consolidar.");
       return;
     }
 
-    const confirmMessage = `¿Consolidar ${totalSavingsThisMonth.toFixed(2)}€ del mes actual al ahorro total?\n\nEsto sumará el ahorro de este mes al total acumulado y lo reseteará para el próximo mes.`;
-    
+    const currentTotal = Number(meta.savingsSoFar) || 0;
+    const newTotal = currentTotal + totalSavingsThisMonth;
+
+    const confirmMessage =
+      `¿Consolidar ${totalSavingsThisMonth.toFixed(2)} € del mes actual al ahorro total?\n\n` +
+      `Esto sumará el ahorro del mes al ahorro acumulado, sin borrar el ahorro mensual.\n\n` +
+      `Ahorro acumulado actual: ${currentTotal.toFixed(2)} €\n` +
+      `Nuevo ahorro acumulado: ${newTotal.toFixed(2)} €`;
+
     if (confirm(confirmMessage)) {
-      const newTotal = (Number(meta.savingsSoFar) || 0) + totalSavingsThisMonth;
-      await saveMeta({ 
-        ...meta, 
+      await saveMeta({
+        ...meta,
         savingsSoFar: newTotal,
-        savingTarget: 0, // Resetear ahorro programado
-        extraSavings: 0, // Resetear ahorro extra
+        savingsConsolidated: true,
       });
-      alert(`¡Éxito! Ahorro consolidado: ${totalSavingsThisMonth.toFixed(2)}€\nNuevo total acumulado: ${newTotal.toFixed(2)}€`);
+
+      alert(
+        `Ahorro consolidado correctamente.\n\n` +
+        `Sumado: ${totalSavingsThisMonth.toFixed(2)} €\n` +
+        `Nuevo total acumulado: ${newTotal.toFixed(2)} €`
+      );
     }
   }
 
@@ -941,9 +962,9 @@ export default function HomePage() {
                     <button
                       onClick={consolidateMonthSavings}
                       className="col-span-1 rounded-lg bg-gradient-to-r from-emerald-500/20 to-green-500/20 border border-emerald-400/30 py-2.5 px-3 text-xs font-bold text-emerald-200 hover:from-emerald-500/30 hover:to-green-500/30 hover:border-emerald-400/50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                      disabled={totals.totalSavingThisMonth <= 0}
+                      disabled={totals.totalSavingThisMonth <= 0 || meta.savingsConsolidated}
                     >
-                      📦 Consolidar
+                      {meta.savingsConsolidated ? "✅ Consolidado" : "📦 Consolidar"}
                     </button>
                     <button
                       onClick={() => addQuickSavings(50)}
